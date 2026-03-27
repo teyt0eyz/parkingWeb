@@ -1,0 +1,53 @@
+﻿@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parking Display</title>
+    <style>
+        /* ลบขอบขาวและทำให้พื้นหลังดำสนิท */
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: black; 
+        }
+
+        /* คอนเทนเนอร์ขนาดเท่าหน้าจอพอดี */
+        #display-container { 
+            width: 100vw; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        /* ปรับวิดีโอและรูปภาพ */
+        video, img { 
+            width: 100%; 
+            height: 100%; 
+            /* object-fit: contain = ขยายให้ใหญ่สุดโดยไม่เสียสัดส่วน (อาจมีขอบดำถ้าขนาดจอไม่พอดี) */
+            object-fit: contain; 
+            display: none; 
+        }
+
+        /* คลาสสำหรับสั่งให้โชว์ */
+        .active { 
+            display: block !important; 
+        }
+    </style>
+</head>
+<body>
+
+<div id="display-container">
+    <video id="idleVideo" autoplay loop muted playsinline class="active">
+        <source src="/videos/idle.mp4" type="video/mp4">
+    </video>
+
+    <img id="guideImage" src="" />
+</div>
+
+</body>
+</html>

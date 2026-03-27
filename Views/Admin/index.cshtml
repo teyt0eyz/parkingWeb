@@ -1,0 +1,85 @@
+@model IEnumerable<ParkingWeb.Models.ParkingState>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    var primaryColor = "#00adb5"; 
+}
+
+<style>
+    body { background-color: #f7f9fc; color: #393e46; font-family: 'Segoe UI', sans-serif; }
+    .custom-card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; margin-bottom: 25px; }
+    .btn-teal { background: @primaryColor; color: white; border: none; border-radius: 8px; font-weight: 600; padding: 8px 15px; }
+    .btn-teal:hover { background: #008a91; color: white; }
+    .img-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; }
+    .table thead th { background: #f8fafc; border: none; color: #888; font-size: 0.8rem; text-transform: uppercase; }
+</style>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">ระบบจัดการ Raspberry Pi</h2>
+        <p class="text-muted">อัปโหลดวิดีโอและรูปภาพคำแนะนำการจอดรถ</p>
+    </div>
+
+    <div class="custom-card">
+        <h5 class="fw-bold mb-3">วิดีโอตอนไม่มีรถ (Idle Video)</h5>
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <video width="100%" class="rounded-3 shadow-sm" controls>
+                    <source src="/videos/idle.mp4?v=@DateTime.Now.Ticks" type="video/mp4">
+                </video>
+            </div>
+            <div class="col-md-8">
+                <form asp-action="UpdateIdleVideo" method="post" enctype="multipart/form-data" class="d-flex gap-2">
+                    <input type="file" name="videoFile" class="form-control" accept="video/mp4" required />
+                    <button type="submit" class="btn btn-teal">SAVE VIDEO</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-card">
+        <h5 class="fw-bold mb-3">รูปภาพสถานะ GPIO</h5>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>สถานะ</th>
+                        <th>GPIO</th>
+                        <th>รูปปัจจุบัน</th>
+                        <th style="width: 450px;">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model) {
+                        <tr>
+                            <td><strong>@item.StateName</strong></td>
+                            <td><span class="badge bg-light text-dark border px-3 py-2 rounded-pill">PIN @item.GpioPin</span></td>
+                            <td>
+                                @if (string.IsNullOrEmpty(item.ImagePath)) {
+                                    <div class="img-thumb bg-light d-flex align-items-center justify-content-center text-muted small">No Image</div>
+                                } else {
+                                    <img src="/uploads/@item.ImagePath" class="img-thumb" />
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    @* ฟอร์มอัปโหลด/เปลี่ยนรูป *@
+                                    <form asp-action="UpdateStateImage" method="post" enctype="multipart/form-data" class="d-flex gap-1 flex-grow-1">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="file" name="imageFile" class="form-control form-control-sm" required />
+                                        <button type="submit" class="btn btn-teal btn-sm">UPLOAD</button>
+                                    </form>
+                                    
+                                    @* ปุ่มลบ *@
+                                    <form asp-action="DeleteStateImage" method="post">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ลบรูปภาพนี้?')">DELETE</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
