@@ -3,51 +3,109 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Parking Display</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking NetVision Kiosk</title>
     <style>
-        /* ลบขอบขาวและทำให้พื้นหลังดำสนิท */
+        /* จัดหน้าจอให้เต็ม และพื้นหลังดำสนิท */
         body, html { 
             margin: 0; 
             padding: 0; 
             width: 100%; 
             height: 100%; 
-            overflow: hidden; 
             background-color: black; 
+            overflow: hidden; 
         }
 
-        /* คอนเทนเนอร์ขนาดเท่าหน้าจอพอดี */
         #display-container { 
+            position: relative; 
             width: 100vw; 
             height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
         }
-
-        /* ปรับวิดีโอและรูปภาพ */
-        video, img { 
+        /* แก้ไขจากเดิมที่เขียนรวมกัน ให้แยก idleVideo ออกมา */
+        #guideImage { 
+            position: absolute; 
+            top: 0; 
+            left: 0;
             width: 100%; 
             height: 100%; 
-            /* object-fit: contain = ขยายให้ใหญ่สุดโดยไม่เสียสัดส่วน (อาจมีขอบดำถ้าขนาดจอไม่พอดี) */
             object-fit: contain; 
-            display: none; 
+            display: none; /* รูปรถยังคงซ่อนไว้ก่อน */
+            
+            transform: translateZ(0); 
+            will-change: transform, opacity;
         }
 
-        /* คลาสสำหรับสั่งให้โชว์ */
-        .active { 
-            display: block !important; 
+        #idleVideo { 
+            position: absolute; 
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            display: block; /* 🚀 เปลี่ยนเป็น block เพื่อให้โชว์ทันทีที่โหลดหน้าเว็บ! */
+            
+            transform: translateZ(0); 
+            will-change: transform, opacity;
         }
     </style>
 </head>
 <body>
 
 <div id="display-container">
-    <video id="idleVideo" autoplay loop muted playsinline class="active">
-        <source src="/videos/idle.mp4" type="video/mp4">
-    </video>
-
-    <img id="guideImage" src="" />
+    <img id="idleVideo" src="/videos/idle.webp" alt="Background" />
+    
+    <img id="guideImage" src="" alt="Car Guide" />
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+
+<script>
+    const idleImg = document.getElementById('idleVideo');
+    const carImg = document.getElementById('guideImage');
+
+    // 1. ตั้งค่า SignalR ให้บังคับใช้ "WebSockets" เท่านั้น (เพื่อความเร็วสูงสุด)
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/parkingHub", {
+            transport: signalR.HttpTransportType.WebSockets // บังคับใช้ท่อด่วน ไม่ต้องรอต่อคิว
+        })
+        .withAutomaticReconnect([0, 500, 1000, 2000]) // ถ้าหลุด ให้รีบต่อใหม่ใน 0.5 วินาทีทันที
+        .build();
+
+    connection.on("ReceiveStatus", (imagePath, hasCar) => {
+        if (hasCar && imagePath !== "") {
+            // 2. ปรับการโหลดรูป: ถ้าเป็น Localhost ใน Pi มันเร็วอยู่แล้ว
+            // เราอาจจะไม่ต้องรอ onload นาน ให้เริ่มเปลี่ยนรูปทันทีที่เริ่มโหลด
+            const targetUrl = '/uploads/' + imagePath;
+            
+            if (carImg.src.includes(imagePath)) {
+                // ถ้ารูปเดิมอยู่แล้ว ไม่ต้องทำอะไร
+                carImg.style.display = 'block';
+                idleImg.style.display = 'none';
+            } else {
+                carImg.src = targetUrl;
+                carImg.style.display = 'block';
+                idleImg.style.display = 'none';
+            }
+        } else {
+            carImg.style.display = 'none';
+            idleImg.style.display = 'block';
+        }
+    });
+
+    async function startConnection() {
+        try {
+            await connection.start();
+            console.log("✅ Connected!");
+        } catch (err) {
+            // 3. ลดเวลา Retry จาก 3000ms เหลือ 500ms (ครึ่งวินาที) 
+            // เพื่อให้มันเกาะเซิร์ฟเวอร์ได้ไวที่สุดหลังจาก Pi บูตเสร็จ
+            setTimeout(startConnection, 500); 
+        }
+    }
+
+    startConnection();
+    // ป้องกันการกดคลิกขวา (โหมด Kiosk)
+    document.addEventListener('contextmenu', event => event.preventDefault());
+</script>
 </body>
 </html>

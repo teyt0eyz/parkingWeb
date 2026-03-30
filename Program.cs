@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ParkingWeb.Data;
+using ParkingWeb.Services;
 using ParkingWeb.Models;
 using ParkingWeb.Hubs;
 
@@ -12,6 +13,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+builder.Services.AddHostedService<GpioService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -28,12 +31,12 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
+//app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    ;
 
 app.MapHub<ParkingHub>("/parkingHub");
 using (var scope = app.Services.CreateScope())
