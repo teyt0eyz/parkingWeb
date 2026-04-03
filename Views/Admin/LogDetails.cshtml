@@ -1,0 +1,59 @@
+@model List<string>
+@{
+    ViewData["Title"] = "Log Details";
+}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --blue: #185FA5; --ink: #111827; --bg: #F4F6F9; --white: #ffffff; --border: #E5E7EB;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); padding: 40px; }
+    .container { max-width: 900px; margin: 0 auto; background: var(--white); padding: 32px; border-radius: 12px; border: 0.5px solid var(--border); shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    h2 { font-size: 20px; font-weight: 600; }
+    .table-container { overflow-x: auto; border-radius: 8px; border: 0.5px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #F9FAFB; padding: 12px; text-align: left; font-weight: 600; border-bottom: 0.5px solid var(--border); }
+    td { padding: 12px; border-bottom: 0.5px solid var(--border-lt); }
+    tr:hover { background: #F9FAFB; }
+    .btn-back { text-decoration: none; color: var(--ink); font-size: 13px; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+</style>
+
+<div class="container">
+    <div class="header">
+        <a asp-action="ViewLogs" class="btn-back">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            ย้อนกลับ
+        </a>
+        <h2>📅 รายงานวันที่ @ViewBag.FileName</h2>
+        <a asp-action="DownloadLog" asp-route-fileName="@(ViewBag.FileName + ".csv")" style="font-size:12px; color:var(--blue); text-decoration:none; font-weight:500;">ดาวน์โหลด CSV</a>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>วันที่</th>
+                    <th>เวลา</th>
+                    <th>ตำแหน่ง (GPIO)</th>
+                    <th>เหตุการณ์</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var line in Model)
+                {
+                    var columns = line.Split(',');
+                    if (columns.Length >= 4)
+                    {
+                        <tr>
+                            <td>@columns[0]</td>
+                            <td>@columns[1]</td>
+                            <td><span style="color:var(--blue); font-weight:600;">@columns[2]</span></td>
+                            <td>@columns[3]</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

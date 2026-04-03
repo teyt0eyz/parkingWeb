@@ -14,6 +14,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<GpioService>();
+builder.Services.AddSingleton<ParkingWeb.Services.LogService>();
 
 var app = builder.Build();
 

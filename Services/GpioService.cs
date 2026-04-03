@@ -2,6 +2,7 @@ using System.Device.Gpio;
 using Microsoft.AspNetCore.SignalR;
 using ParkingWeb.Hubs;
 using ParkingWeb.Data;
+using ParkingWeb.Services; // มั่นใจว่ามี using ตัวนี้
 
 namespace ParkingWeb.Services;
 
@@ -10,18 +11,18 @@ public class GpioService : IHostedService
     private readonly GpioController _gpio;
     private readonly IHubContext<ParkingHub> _hub;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly LogService _logService; // <--- เพิ่มตัวแปร LogService
     
-    // รายชื่อขาทั้งหมดที่ใช้งาน
     private readonly int[] _pins = { 17, 27, 22, 23, 24 };
-    
-    // จำว่าตอนนี้ขาไหนทำงานอยู่ (-1 คือไม่มีรถจอด)
     private int _activePin = -1;
 
-    public GpioService(IHubContext<ParkingHub> hub, IServiceScopeFactory scopeFactory)
+    // แก้ไข Constructor ให้รับ LogService เข้ามาด้วย
+    public GpioService(IHubContext<ParkingHub> hub, IServiceScopeFactory scopeFactory, LogService logService)
     {
         _gpio = new GpioController();
         _hub = hub;
         _scopeFactory = scopeFactory;
+        _logService = logService; // รับค่ามาใช้งาน
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -36,51 +37,50 @@ public class GpioService : IHostedService
 
     private async Task ListenToGpio(CancellationToken ct)
     {
-        Console.WriteLine("--- GpioService: Scanning All Pins... ---");
-
         while (!ct.IsCancellationRequested)
         {
             int triggeredPin = -1;
 
-            // วนลูปเช็คทีละขาว่าขาไหนมีไฟเข้า (High)
             foreach (var pin in _pins)
             {
                 if (_gpio.Read(pin) == PinValue.High)
                 {
                     triggeredPin = pin;
-                    break; // เจอขาแรกที่มีไฟ ก็หยุดเช็คขาอื่นทันที
+                    break;
                 }
             }
 
-            // กรณีที่ 1: มีไฟเข้า (และเปลี่ยนสถานะจากเดิม)
+            // กรณีที่ 1: มีรถมาจอด (GPIO ขานั้นเป็น High และสถานะเปลี่ยน)
             if (triggeredPin != -1 && _activePin != triggeredPin)
             {
                 string imagePath = "";
-                
-                // ดึงชื่อรูปจาก Database ตามขาที่โดนจิ้ม
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                     var state = db.ParkingStates.FirstOrDefault(s => s.GpioPin == triggeredPin);
-                    if (state != null && !string.IsNullOrEmpty(state.ImagePath))
+                    if (state != null)
                     {
                         imagePath = state.ImagePath;
+                        
+                        // ✅ [LOGGING] บันทึกเมื่อมีรถมาจอดและรูปเปลี่ยน
+                        _logService.SaveLog(triggeredPin, $"DETECTED: Car parked at Pin {triggeredPin} (State: {state.StateName})");
                     }
                 }
 
-                Console.WriteLine($">>> [DETECTED] GPIO {triggeredPin} is HIGH! Image: {imagePath}");
                 await _hub.Clients.All.SendAsync("ReceiveStatus", imagePath, true);
                 _activePin = triggeredPin;
             }
-            // กรณีที่ 2: ไม่มีไฟเข้าเลยทุกขา (และก่อนหน้านี้มีรถจอดอยู่)
+            // กรณีที่ 2: รถออก (กลับสู่หน้า Video ปกติ)
             else if (triggeredPin == -1 && _activePin != -1)
             {
-                Console.WriteLine("<<< [CLEARED] All GPIOs are LOW. Back to Idle.");
+                // ✅ [LOGGING] บันทึกเมื่อรถออก (เพื่อให้รู้ว่าจอดนานแค่ไหน)
+                _logService.SaveLog(_activePin, $"CLEARED: Car departed from Pin {_activePin}. System returned to Idle Video.");
+
                 await _hub.Clients.All.SendAsync("ReceiveStatus", "", false);
                 _activePin = -1;
             }
 
-            await Task.Delay(50); // พัก 0.15 วิ
+            await Task.Delay(150); // พัก 0.15 วินาที
         }
     }
 

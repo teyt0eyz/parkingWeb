@@ -21,7 +21,7 @@
             width: 100vw; 
             height: 100vh; 
         }
-        /* แก้ไขจากเดิมที่เขียนรวมกัน ให้แยก idleVideo ออกมา */
+        
         #guideImage { 
             position: absolute; 
             top: 0; 
@@ -30,7 +30,6 @@
             height: 100%; 
             object-fit: contain; 
             display: none; /* รูปรถยังคงซ่อนไว้ก่อน */
-            
             transform: translateZ(0); 
             will-change: transform, opacity;
         }
@@ -42,8 +41,7 @@
             width: 100%; 
             height: 100%; 
             object-fit: contain; 
-            display: block; /* 🚀 เปลี่ยนเป็น block เพื่อให้โชว์ทันทีที่โหลดหน้าเว็บ! */
-            
+            display: block; /* โชว์ทันทีที่โหลดหน้าเว็บ */
             transform: translateZ(0); 
             will-change: transform, opacity;
         }
@@ -52,43 +50,45 @@
 <body>
 
 <div id="display-container">
-    <img id="idleVideo" src="/videos/idle.webp" alt="Background" />
+    <video id="idleVideo" src="/videos/idle.mp4" autoplay loop muted playsinline></video>
     
     <img id="guideImage" src="" alt="Car Guide" />
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script src="~/js/signalr.min.js"></script>
 
 <script>
-    const idleImg = document.getElementById('idleVideo');
+    const idleVid = document.getElementById('idleVideo');
     const carImg = document.getElementById('guideImage');
 
     // 1. ตั้งค่า SignalR ให้บังคับใช้ "WebSockets" เท่านั้น (เพื่อความเร็วสูงสุด)
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/parkingHub", {
-            transport: signalR.HttpTransportType.WebSockets // บังคับใช้ท่อด่วน ไม่ต้องรอต่อคิว
+            transport: signalR.HttpTransportType.WebSockets 
         })
-        .withAutomaticReconnect([0, 500, 1000, 2000]) // ถ้าหลุด ให้รีบต่อใหม่ใน 0.5 วินาทีทันที
+        .withAutomaticReconnect([0, 500, 1000, 2000]) 
         .build();
 
     connection.on("ReceiveStatus", (imagePath, hasCar) => {
         if (hasCar && imagePath !== "") {
-            // 2. ปรับการโหลดรูป: ถ้าเป็น Localhost ใน Pi มันเร็วอยู่แล้ว
-            // เราอาจจะไม่ต้องรอ onload นาน ให้เริ่มเปลี่ยนรูปทันทีที่เริ่มโหลด
             const targetUrl = '/uploads/' + imagePath;
             
             if (carImg.src.includes(imagePath)) {
                 // ถ้ารูปเดิมอยู่แล้ว ไม่ต้องทำอะไร
                 carImg.style.display = 'block';
-                idleImg.style.display = 'none';
+                idleVid.style.display = 'none';
             } else {
                 carImg.src = targetUrl;
                 carImg.style.display = 'block';
-                idleImg.style.display = 'none';
+                idleVid.style.display = 'none';
             }
         } else {
+            // ซ่อนรูปรถ และกลับมาโชว์วิดีโอ Idle
             carImg.style.display = 'none';
-            idleImg.style.display = 'block';
+            idleVid.style.display = 'block';
+            
+            // 🚀 สั่งเล่นวิดีโอซ้ำอีกรอบเผื่อเบราว์เซอร์หยุดมันตอนโดนซ่อน
+            idleVid.play().catch(e => console.log("Auto-play prevented: ", e));
         }
     });
 
@@ -97,8 +97,7 @@
             await connection.start();
             console.log("✅ Connected!");
         } catch (err) {
-            // 3. ลดเวลา Retry จาก 3000ms เหลือ 500ms (ครึ่งวินาที) 
-            // เพื่อให้มันเกาะเซิร์ฟเวอร์ได้ไวที่สุดหลังจาก Pi บูตเสร็จ
+            // 3. ลดเวลา Retry เพื่อให้มันเกาะเซิร์ฟเวอร์ได้ไวที่สุดหลังจาก Pi บูตเสร็จ
             setTimeout(startConnection, 500); 
         }
     }
