@@ -170,22 +170,22 @@
     .pk-card-body  { padding: 20px; flex: 1; display: flex; flex-direction: column; }
 
     /* ── Video ── */
-    
-    .pk-vbox { 
-        width: 100%; 
-        aspect-ratio: 16/9; 
-        background: #000; /* พื้นหลังดำสนิท */
-        border-radius: var(--radius-md); 
-        overflow: hidden; 
-        border: 1px solid var(--border); 
+    .pk-vbox {
+        width: 100%;
+        height: 196px;
+        background: #000;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-
-    .pk-vbox video { 
-        width: 100%; 
-        height: 100%; 
-        display: block; 
-        /* 🚀 เพิ่มบรรทัดนี้ลงไป */
-        object-fit: contain; 
+    .pk-vbox video {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain; /* รองรับทั้ง landscape/portrait ไม่เพี้ยน */
     }
     .pk-upload-hint { font-size: 13px; color: var(--ink-3); margin: 14px 0; line-height: 1.7; }
     .pk-file-zone { border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center; background: var(--bg); margin-bottom: 12px; display: block; transition: all .2s; cursor: pointer; }
@@ -223,18 +223,16 @@
 
     /* ── Kiosk Rotation ── */
     .pk-kiosk-layout {
-        display: flex; gap: 28px; align-items: stretch; flex-wrap: wrap; flex: 1;
+        display: flex; flex-direction: column; align-items: center; gap: 20px; flex: 1; justify-content: center;
     }
     .pk-kiosk-preview {
-        flex: 1; min-width: 180px;
-        display: flex; align-items: center; justify-content: center;
+        display: flex; align-items: center; justify-content: center; width: 100%;
     }
     .pk-kiosk-controls {
-        flex: 1; min-width: 200px; max-width: 320px;
-        display: flex; flex-direction: column; justify-content: center;
+        width: 100%; display: flex; flex-direction: column;
     }
 
-    .pk-screen-stage { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 28px 32px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); }
+    .pk-screen-stage { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px 32px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); width: 100%; }
     .pk-screen-frame { position: relative; width: 88px; height: 56px; border: 2.5px solid var(--ink-2); border-radius: 7px; background: linear-gradient(135deg, var(--blue-lt) 0%, #DBEAFE 100%); display: flex; align-items: center; justify-content: center; transition: all .5s cubic-bezier(.4,0,.2,1); overflow: visible; }
     .pk-screen-frame::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 20px; height: 5px; background: var(--ink-2); border-radius: 0 0 3px 3px; }
     .pk-screen-stand { width: 28px; height: 4px; background: var(--ink-2); border-radius: 2px; margin-top: 4px; }
@@ -284,9 +282,8 @@
         .pk-gpio-actions { grid-column: 1 / -1; }
         .pk-gpio-row > form:last-child { grid-column: 1 / -1; text-align: right; }
         .pk-screen-frame { width: 72px; height: 46px; }
-        .pk-screen-stage { padding: 20px; }
-        .pk-kiosk-layout { gap: 18px; }
-        .pk-kiosk-controls { max-width: none; }
+        .pk-screen-stage { padding: 16px 20px; }
+        .pk-kiosk-layout { gap: 14px; }
         .pk-footer-bar { flex-direction: column; align-items: flex-start; }
     }
     @@media (max-width: 420px) {
@@ -374,52 +371,54 @@
         }
     </div>
 
-    <!-- Card 01: Idle Video -->
-    <div class="pk-card">
-        <div class="pk-card-head">
-            <div class="pk-card-head-left">
-                <div class="pk-card-accent"></div>
-                <div class="pk-card-num">01</div>
-                <span class="pk-card-title">Idle State Video</span>
-            </div>
-            <span class="pk-card-meta">MP4 · max 200 MB</span>
-        </div>
-        <div class="pk-card-body">
-            <div class="pk-vbox">
-                <video controls>
-                    <source src="/videos/idle.mp4?v=@DateTime.Now.Ticks" type="video/mp4">
-                </video>
-            </div>
-            <p class="pk-upload-hint">
-                Replace the current idle loop displayed on parking screens.
-                Upload a new MP4 file below — changes take effect immediately after saving.
-            </p>
-            <form asp-action="UpdateIdleVideo" method="post" enctype="multipart/form-data">
-                <label class="pk-file-zone" id="videoDropZone">
-                    <div class="pk-fz-icon">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                    </div>
-                    <div class="pk-fz-label">Drop file here, or <span>browse files</span></div>
-                    <div class="pk-fz-sub" id="videoFileName">Only .mp4 files are accepted</div>
-                    <input type="file" name="videoFile" accept="video/mp4" required id="videoFileInput">
-                </label>
-                <button type="submit" class="btn-pk-primary">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                    </svg>
-                    Save Video
-                </button>
-            </form>
-        </div>
-    </div>
+    <div class="pk-two-col">
 
-    <!-- Card 02: Kiosk Display Rotation -->
-    <div class="pk-card">
+        <!-- Card 01: Idle Video -->
+        <div class="pk-card">
+            <div class="pk-card-head">
+                <div class="pk-card-head-left">
+                    <div class="pk-card-accent"></div>
+                    <div class="pk-card-num">01</div>
+                    <span class="pk-card-title">Idle State Video</span>
+                </div>
+                <span class="pk-card-meta">MP4 · max 200 MB</span>
+            </div>
+            <div class="pk-card-body">
+                <div class="pk-vbox">
+                    <video controls>
+                        <source src="/videos/idle.mp4?v=@DateTime.Now.Ticks" type="video/mp4">
+                    </video>
+                </div>
+                <p class="pk-upload-hint">
+                    Replace the current idle loop displayed on parking screens.
+                    Upload a new MP4 file below — changes take effect immediately after saving.
+                </p>
+                <form asp-action="UpdateIdleVideo" method="post" enctype="multipart/form-data">
+                    <label class="pk-file-zone" id="videoDropZone">
+                        <div class="pk-fz-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <div class="pk-fz-label">Drop file here, or <span>browse files</span></div>
+                        <div class="pk-fz-sub" id="videoFileName">Only .mp4 files are accepted</div>
+                        <input type="file" name="videoFile" accept="video/mp4" required id="videoFileInput">
+                    </label>
+                    <button type="submit" class="btn-pk-primary">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        Save Video
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Card 02: Kiosk Display Rotation -->
+        <div class="pk-card">
             <div class="pk-card-head">
                 <div class="pk-card-head-left">
                     <div class="pk-card-accent"></div>
@@ -494,6 +493,8 @@
                 </div>
             </div>
         </div>
+
+    </div><!-- /pk-two-col -->
 
     <!-- Card 03: GPIO State Images -->
     <div class="pk-card">
