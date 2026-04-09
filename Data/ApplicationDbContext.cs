@@ -12,6 +12,6 @@ namespace ParkingWeb.Data // เปลี่ยน ParkingWeb เป็นชื
 
         // นี่คือการบอกว่าเราจะมีตารางชื่อ ParkingStates ในฐานข้อมูล
         public DbSet<ParkingState> ParkingStates { get; set; }
-        
+    
     }
 }

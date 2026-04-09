@@ -1,558 +1,338 @@
 @model IEnumerable<ParkingWeb.Models.ParkingState>
 @{
     ViewData["Title"] = "Control Panel";
+
+    double usedPct  = double.Parse(ViewBag.UsedPercent.ToString());
+    double totalGB  = double.Parse(ViewBag.TotalSpace.ToString());
+    double freeGB   = double.Parse(ViewBag.FreeSpace.ToString());
+    double usedGB   = totalGB - freeGB;
+
+    string ringColor = usedPct >= 90 ? "#ef4444"
+                     : usedPct >= 75 ? "#f59e0b"
+                     : usedPct >= 50 ? "#185FA5"
+                     : "#22c55e";
+
+    double r             = 24;
+    double circumference = 2 * Math.PI * r;
+    double dashOffset    = circumference - (usedPct / 100.0) * circumference;
+
+    int[] monitorPins = { 17, 27, 22, 23, 24 };
 }
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-        --blue:        #185FA5;
-        --blue-dk:     #0C447C;
-        --blue-lt:     #EFF6FF;
-        --blue-bd:     #BFDBFE;
-        --ink:         #111827;
-        --ink-2:       #374151;
-        --ink-3:       #6B7280;
-        --ink-4:       #9CA3AF;
-        --bg:          #F4F6F9;
-        --surface:     #FAFAFA;
-        --white:       #ffffff;
-        --border:      #E5E7EB;
-        --border-lt:   #F3F4F6;
-        --green-lt:    #EAF3DE;
-        --green-bd:    #C0DD97;
-        --green-tx:    #3B6D11;
-        --green-dot:   #639922;
-        --red:         #A32D2D;
-        --red-lt:      #FEF2F2;
-        --red-bd:      #FECACA;
-        --radius-sm:   6px;
-        --radius-md:   8px;
-        --radius-lg:   12px;
+        --blue:       #2563EB;
+        --blue-dk:    #1D4ED8;
+        --blue-lt:    #EFF6FF;
+        --blue-bd:    #BFDBFE;
+        --ink:        #0F172A;
+        --ink-2:      #334155;
+        --ink-3:      #64748B;
+        --ink-4:      #94A3B8;
+        --bg:         #F8FAFC;
+        --surface:    #FAFAFA;
+        --white:      #ffffff;
+        --border:     #E2E8F0;
+        --border-lt:  #F1F5F9;
+        --green-lt:   #F0FDF4;
+        --green-bd:   #BBF7D0;
+        --green-tx:   #166534;
+        --green-dot:  #16A34A;
+        --red:        #ef4444;
+        --red-lt:     #FEF2F2;
+        --red-bd:     #FECACA;
+        --red-tx:     #991B1B;
+        --radius-sm:  8px;
+        --radius-md:  10px;
+        --radius-lg:  14px;
     }
 
     body {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
         background: var(--bg);
         color: var(--ink);
         font-size: 14px;
-        line-height: 1.5;
+        line-height: 1.6;
         -webkit-font-smoothing: antialiased;
     }
 
     /* ── Topbar ── */
     .pk-topbar {
-        background: var(--white);
-        border-bottom: 0.5px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 28px;
-        height: 54px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
+        background: var(--white); border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 28px; height: 58px; position: sticky; top: 0; z-index: 100;
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
     }
-
-    .pk-brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--ink);
-        text-decoration: none;
-    }
-
-    .pk-logo {
-        width: 30px;
-        height: 30px;
-        background: var(--blue);
-        border-radius: 7px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .pk-logo svg {
-        width: 15px;
-        height: 15px;
-        stroke: #fff;
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    .pk-nav-tag {
-        font-size: 11px;
-        color: var(--ink-3);
-        background: var(--border-lt);
-        border: 0.5px solid var(--border);
-        border-radius: 4px;
-        padding: 2px 9px;
-    }
-
-    .pk-avatar {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: var(--blue-lt);
-        border: 0.5px solid var(--blue-bd);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--blue);
-    }
+    .pk-brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: var(--ink); text-decoration: none; letter-spacing: -.2px; }
+    .pk-logo { width: 34px; height: 34px; background: var(--blue); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,.25); }
+    .pk-logo svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-nav-tag { font-size: 10px; color: var(--ink-3); background: var(--border-lt); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-family: 'JetBrains Mono', monospace; font-weight: 500; letter-spacing: .3px; }
+    .pk-avatar { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--blue-lt), #DBEAFE); border: 1.5px solid var(--blue-bd); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--blue); }
 
     /* ── Hero ── */
-    .pk-hero {
-        background: var(--white);
-        border-bottom: 0.5px solid var(--border);
-        padding: 28px 32px;
-    }
-
-    .pk-hero-inner {
-        max-width: 1080px;
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .pk-crumb {
-        font-size: 11px;
-        color: var(--ink-4);
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        margin-bottom: 6px;
-    }
-
-    .pk-crumb svg {
-        width: 10px;
-        height: 10px;
-        stroke: var(--ink-4);
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    .pk-hero-title {
-        font-size: 22px;
-        font-weight: 600;
-        color: var(--ink);
-    }
-
-    .pk-hero-sub {
-        font-size: 13px;
-        color: var(--ink-3);
-        margin-top: 3px;
-    }
-
-    .pk-status-pill {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--green-lt);
-        border: 0.5px solid var(--green-bd);
-        border-radius: 20px;
-        padding: 7px 16px;
-        font-size: 12px;
-        color: var(--green-tx);
-        font-weight: 500;
-        white-space: nowrap;
-    }
-
-    .pk-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--green-dot);
-        flex-shrink: 0;
-    }
+    .pk-hero { background: var(--white); border-bottom: 1px solid var(--border); padding: 26px 32px; }
+    .pk-hero-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+    .pk-crumb { font-size: 11px; color: var(--ink-4); display: flex; align-items: center; gap: 5px; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+    .pk-crumb svg { width: 9px; height: 9px; stroke: var(--ink-4); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-hero-title { font-size: 24px; font-weight: 700; color: var(--ink); letter-spacing: -.4px; }
+    .pk-hero-sub   { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+    .pk-status-pill { display: flex; align-items: center; gap: 8px; background: var(--green-lt); border: 1px solid var(--green-bd); border-radius: 100px; padding: 8px 16px; font-size: 12px; color: var(--green-tx); font-weight: 600; white-space: nowrap; }
+    .pk-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-dot); flex-shrink: 0; position: relative; }
+    .pk-dot::after { content:''; position:absolute; inset:-3px; border-radius:50%; background:rgba(22,163,74,.3); animation: pk-pulse 2s ease-out infinite; }
+    @@keyframes pk-pulse { 0%{transform:scale(.8);opacity:1;} 100%{transform:scale(2);opacity:0;} }
 
     /* ── Content ── */
-    .pk-content {
-        max-width: 1080px;
-        margin: 0 auto;
-        padding: 24px 32px 56px;
+    .pk-content { max-width: 1180px; margin: 0 auto; padding: 24px 32px 56px; display: flex; flex-direction: column; gap: 18px; }
+
+    /* ── Storage bar (horizontal) ── */
+    .pk-storage-bar-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 18px 22px;
+        transition: all .2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .pk-storage-bar-card::before {
+        content:''; position:absolute; top:0; left:0; right:0; height:3px;
+        background:var(--blue); opacity:0; transition:opacity .2s;
+        border-radius: 14px 14px 0 0;
+    }
+    .pk-storage-bar-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.06); transform: translateY(-1px); }
+    .pk-storage-bar-card:hover::before { opacity:1; }
+
+    .pk-sb-head {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .pk-sb-head-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .pk-sb-icon {
+        width: 36px; height: 36px; border-radius: 10px;
+        background: var(--blue-lt); border: 1px solid var(--blue-bd);
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .pk-sb-icon svg { width: 16px; height: 16px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-sb-label { font-size: 12px; color: var(--ink-4); font-weight: 500; line-height: 1.2; }
+    .pk-sb-title { font-size: 14px; font-weight: 700; color: var(--ink); letter-spacing: -.2px; margin-top: 2px; }
+    .pk-sb-pct {
+        font-size: 13px; font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+        padding: 5px 11px; border-radius: 7px;
+        background: var(--border-lt); border: 1px solid var(--border);
+    }
+    .pk-sb-track {
+        position: relative; width: 100%; height: 12px;
+        background: var(--border-lt); border-radius: 100px;
+        overflow: hidden; border: 1px solid var(--border);
+    }
+    .pk-sb-fill {
+        height: 100%; border-radius: 100px;
+        transition: width .8s cubic-bezier(.4,0,.2,1);
+        position: relative;
+        background-image: linear-gradient(90deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,.18) 100%);
+    }
+    .pk-sb-foot {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-top: 10px; gap: 12px; flex-wrap: wrap;
+    }
+    .pk-sb-meta { font-size: 12px; color: var(--ink-3); font-weight: 500; }
+    .pk-sb-meta strong { color: var(--ink); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .pk-sb-free { font-size: 12px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+    .pk-sb-free strong { color: var(--ink-2); font-weight: 700; }
+
+    .pk-warn-badge { display: inline-flex; align-items: center; gap: 4px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 600; margin-top: 5px; }
+
+    /* GPIO compact card */
+    .pk-gpio-compact {
+        background: var(--white); border: 1px solid var(--border);
+        border-radius: var(--radius-lg); padding: 20px;
+        transition: all .2s ease;
+        display: flex; flex-direction: column;
+    }
+    .pk-gpio-compact:hover { box-shadow: 0 4px 14px rgba(0,0,0,.06); transform: translateY(-1px); }
+    .pk-gpio-compact-head {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 14px;
+    }
+    .pk-gpio-compact-head-left { display: flex; align-items: center; gap: 8px; }
+    .pk-gpio-compact-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+    .pk-gpio-monitor-grid { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; flex: 1; align-items: center; }
+    .gpio-monitor-item { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 10px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-md); min-width: 56px; transition: all .3s ease; }
+    .gpio-led { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; box-shadow: inset 0 1px 3px rgba(0,0,0,.1); transition: all .3s ease; }
+    .gpio-label { font-size: 9px; font-weight: 600; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; }
+    .gpio-monitor-item.active { border-color: var(--green-bd); background: var(--green-lt); }
+    .gpio-monitor-item.active .gpio-led { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,.5); }
+    .gpio-monitor-item.active .gpio-label { color: var(--green-tx); }
+    .pk-conn-badge { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; border-radius: 6px; padding: 4px 10px; }
+    .pk-conn-badge.live { background: var(--green-lt); color: var(--green-tx); border: 1px solid var(--green-bd); }
+    .pk-conn-badge.off  { background: var(--red-lt); color: var(--red); border: 1px solid var(--red-bd); }
+
+    /* ── Two-col ── */
+    .pk-two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        align-items: stretch;
+    }
+    .pk-two-col > .pk-card {
         display: flex;
         flex-direction: column;
-        gap: 20px;
     }
 
     /* ── Card ── */
-    .pk-card {
-        background: var(--white);
-        border: 0.5px solid var(--border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
+    .pk-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .pk-card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--border-lt); }
+    .pk-card-head-left { display: flex; align-items: center; gap: 9px; }
+    .pk-card-accent { width: 3px; height: 17px; border-radius: 2px; background: var(--blue); flex-shrink: 0; }
+    .pk-card-accent.green { background: var(--green-dot); }
+    .pk-card-num { width: 22px; height: 22px; background: var(--white); border: 1px solid var(--border); border-radius: 6px; font-size: 10px; font-weight: 700; color: var(--ink-3); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; }
+    .pk-card-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+    .pk-card-meta  { font-size: 11px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+    .pk-card-body  { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+
+    /* ── Video ── */
+    
+    .pk-vbox { 
+        width: 100%; 
+        aspect-ratio: 16/9; 
+        background: #000; /* พื้นหลังดำสนิท */
+        border-radius: var(--radius-md); 
+        overflow: hidden; 
+        border: 1px solid var(--border); 
     }
 
-    .pk-card-head {
-        padding: 14px 22px;
-        border-bottom: 0.5px solid var(--border-lt);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--surface);
+    .pk-vbox video { 
+        width: 100%; 
+        height: 100%; 
+        display: block; 
+        /* 🚀 เพิ่มบรรทัดนี้ลงไป */
+        object-fit: contain; 
     }
-
-    .pk-card-head-left {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .pk-card-num {
-        width: 22px;
-        height: 22px;
-        background: var(--border-lt);
-        border: 0.5px solid var(--border);
-        border-radius: 5px;
-        font-size: 10px;
-        font-weight: 500;
-        color: var(--ink-3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .pk-card-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--ink);
-    }
-
-    .pk-card-meta {
-        font-size: 11px;
-        color: var(--ink-4);
-    }
-
-    .pk-card-body {
-        padding: 22px;
-    }
-
-    /* ── Video section ── */
-    .pk-video-wrapper {
-        display: flex;
-        gap: 24px;
-        flex-wrap: wrap;
-        align-items: flex-start;
-    }
-
-    .pk-vbox {
-        flex: 0 0 270px;
-        aspect-ratio: 16 / 9;
-        background: #0F172A;
-        border-radius: var(--radius-md);
-        overflow: hidden;
-        border: 0.5px solid var(--border);
-    }
-
-    .pk-vbox video {
-        width: 100%;
-        height: 100%;
-        display: block;
-    }
-
-    .pk-upload-panel {
-        flex: 1;
-        min-width: 200px;
-    }
-
-    .pk-upload-hint {
-        font-size: 12px;
-        color: var(--ink-3);
-        margin-bottom: 14px;
-        line-height: 1.7;
-    }
-
-    .pk-file-zone {
-        border: 0.5px dashed #D1D5DB;
-        border-radius: var(--radius-md);
-        padding: 22px;
-        text-align: center;
-        background: #F9FAFB;
-        margin-bottom: 14px;
-        transition: background 0.15s, border-color 0.15s;
-        cursor: pointer;
-    }
-
-    .pk-file-zone:hover {
-        background: var(--border-lt);
-        border-color: var(--ink-4);
-    }
-
-    .pk-fz-icon {
-        width: 34px;
-        height: 34px;
-        background: var(--white);
-        border: 0.5px solid var(--border);
-        border-radius: var(--radius-md);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 10px;
-    }
-
-    .pk-fz-icon svg {
-        width: 16px;
-        height: 16px;
-        stroke: var(--ink-3);
-        fill: none;
-        stroke-width: 1.5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    .pk-fz-label {
-        font-size: 12px;
-        color: var(--ink-3);
-    }
-
-    .pk-fz-label span {
-        color: var(--blue);
-        cursor: pointer;
-        font-weight: 500;
-    }
-
-    .pk-fz-sub {
-        font-size: 11px;
-        color: var(--ink-4);
-        margin-top: 4px;
-    }
-
-    /* Hide real file input but keep it functional */
-    .pk-file-zone input[type="file"] {
-        display: none;
-    }
+    .pk-upload-hint { font-size: 13px; color: var(--ink-3); margin: 14px 0; line-height: 1.7; }
+    .pk-file-zone { border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center; background: var(--bg); margin-bottom: 12px; display: block; transition: all .2s; cursor: pointer; }
+    .pk-file-zone:hover { background: var(--blue-lt); border-color: var(--blue-bd); }
+    .pk-fz-icon { width: 36px; height: 36px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; }
+    .pk-fz-icon svg { width: 16px; height: 16px; stroke: var(--ink-3); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-fz-label { font-size: 13px; color: var(--ink-3); }
+    .pk-fz-label span { color: var(--blue); cursor: pointer; font-weight: 600; }
+    .pk-fz-sub { font-size: 11px; color: var(--ink-4); margin-top: 4px; }
+    .pk-file-zone input[type="file"] { display: none; }
 
     /* ── Buttons ── */
-    .btn-pk-primary {
-        background: var(--blue);
-        color: #fff;
-        border: none;
-        padding: 9px 18px;
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
-        font-family: inherit;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: background 0.15s;
-    }
-
-    .btn-pk-primary:hover { background: var(--blue-dk); }
-
-    .btn-pk-primary svg {
-        width: 13px;
-        height: 13px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        flex-shrink: 0;
-    }
-
-    .btn-pk-sm {
-        padding: 8px 14px;
-    }
-
-    .btn-pk-danger {
-        color: var(--red);
-        background: var(--white);
-        border: 0.5px solid var(--red-bd);
-        padding: 8px 14px;
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
-        font-family: inherit;
-        transition: background 0.15s;
-    }
-
+    .btn-pk-primary { background: var(--blue); color: #fff; border: none; padding: 10px 18px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; box-shadow: 0 1px 3px rgba(37,99,235,.2); }
+    .btn-pk-primary:hover { background: var(--blue-dk); box-shadow: 0 4px 12px rgba(37,99,235,.25); }
+    .btn-pk-primary svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .btn-pk-sm { padding: 7px 12px; font-size: 12px; }
+    .btn-pk-danger { color: var(--red-tx); background: var(--white); border: 1px solid var(--red-bd); padding: 7px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; transition: all .15s; }
     .btn-pk-danger:hover { background: var(--red-lt); }
-
-    .btn-pk-log {
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--blue);
-        background: var(--blue-lt);
-        border: 0.5px solid var(--blue-bd);
-        border-radius: var(--radius-sm);
-        padding: 10px 18px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: background 0.15s;
-    }
-
+    .btn-pk-log { font-size: 13px; font-weight: 600; color: var(--blue); background: var(--blue-lt); border: 1px solid var(--blue-bd); border-radius: var(--radius-sm); padding: 10px 18px; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all .15s; }
     .btn-pk-log:hover { background: #DBEAFE; }
+    .btn-pk-log svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-    .btn-pk-log svg {
-        width: 13px;
-        height: 13px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        flex-shrink: 0;
-    }
-
-    /* ── GPIO rows ── */
-    .pk-gpio-row {
-        display: grid;
-        grid-template-columns: 52px 1fr auto auto;
-        align-items: center;
-        gap: 16px;
-        padding: 14px 0;
-        border-bottom: 0.5px solid var(--border-lt);
-    }
-
+    /* ── GPIO State Image rows ── */
+    .pk-gpio-row { display: grid; grid-template-columns: 46px 1fr auto auto; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border-lt); }
     .pk-gpio-row:last-child { border-bottom: none; }
-
-    .pk-thumb {
-        width: 52px;
-        height: 52px;
-        object-fit: cover;
-        border-radius: var(--radius-md);
-        border: 0.5px solid var(--border);
-        background: var(--border-lt);
-        flex-shrink: 0;
-    }
-
-    .pk-gpio-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--ink);
-    }
-
-    .pk-gpio-pin {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 11px;
-        color: var(--blue);
-        background: var(--blue-lt);
-        border: 0.5px solid var(--blue-bd);
-        border-radius: 4px;
-        padding: 2px 7px;
-        margin-top: 4px;
-    }
-
-    .pk-gpio-pin svg {
-        width: 10px;
-        height: 10px;
-        stroke: var(--blue);
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        flex-shrink: 0;
-    }
-
-    .pk-gpio-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    /* Custom file input button */
-    .pk-file-wrap {
-        position: relative;
-        display: inline-block;
-        overflow: hidden;
-    }
-
-    .pk-file-btn {
-        font-size: 11px;
-        color: var(--ink-2);
-        background: #F9FAFB;
-        border: 0.5px solid var(--border);
-        border-radius: var(--radius-sm);
-        padding: 8px 12px;
-        cursor: pointer;
-        white-space: nowrap;
-        display: block;
-        transition: background 0.15s;
-        font-family: inherit;
-        font-weight: 400;
-    }
-
+    .pk-thumb { width: 46px; height: 46px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--border-lt); }
+    .pk-gpio-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .pk-gpio-pin { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--blue); background: var(--blue-lt); border: 1px solid var(--blue-bd); border-radius: 6px; padding: 3px 8px; margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+    .pk-gpio-pin svg { width: 9px; height: 9px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-gpio-actions { display: flex; align-items: center; gap: 8px; }
+    .pk-file-wrap { position: relative; display: inline-block; overflow: hidden; }
+    .pk-file-btn { font-size: 12px; color: var(--ink-2); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 12px; cursor: pointer; white-space: nowrap; display: block; transition: all .15s; font-family: inherit; font-weight: 500; }
     .pk-file-btn:hover { background: var(--border-lt); }
+    .pk-file-wrap input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 
-    .pk-file-wrap input[type="file"] {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
-        width: 100%;
-        height: 100%;
+    /* ── Kiosk Rotation ── */
+    .pk-kiosk-layout {
+        display: flex; gap: 28px; align-items: stretch; flex-wrap: wrap; flex: 1;
+    }
+    .pk-kiosk-preview {
+        flex: 1; min-width: 180px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .pk-kiosk-controls {
+        flex: 1; min-width: 200px; max-width: 320px;
+        display: flex; flex-direction: column; justify-content: center;
     }
 
-    /* ── Footer bar ── */
-    .pk-footer-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
+    .pk-screen-stage { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 28px 32px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); }
+    .pk-screen-frame { position: relative; width: 88px; height: 56px; border: 2.5px solid var(--ink-2); border-radius: 7px; background: linear-gradient(135deg, var(--blue-lt) 0%, #DBEAFE 100%); display: flex; align-items: center; justify-content: center; transition: all .5s cubic-bezier(.4,0,.2,1); overflow: visible; }
+    .pk-screen-frame::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 20px; height: 5px; background: var(--ink-2); border-radius: 0 0 3px 3px; }
+    .pk-screen-stand { width: 28px; height: 4px; background: var(--ink-2); border-radius: 2px; margin-top: 4px; }
+    .pk-screen-arrow { transition: transform .5s cubic-bezier(.4,0,.2,1); }
+    .pk-screen-arrow svg { width: 26px; height: 26px; stroke: var(--blue); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 5px rgba(37,99,235,.25)); }
+    .pk-orient-label { font-size: 11px; font-weight: 600; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; text-align: center; margin-top: 2px; }
 
-    .pk-footer-meta {
-        font-size: 11px;
-        color: var(--ink-4);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
+    .pk-rot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pk-rot-btn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 12px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: var(--white); cursor: pointer; transition: all .2s ease; font-family: 'JetBrains Mono', monospace; }
+    .pk-rot-btn:hover { border-color: var(--blue-bd); background: var(--blue-lt); }
+    .pk-rot-btn.active { border-color: var(--blue); background: var(--blue-lt); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .pk-rot-btn svg { width: 22px; height: 22px; stroke: var(--ink-3); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke .2s; }
+    .pk-rot-btn:hover svg, .pk-rot-btn.active svg { stroke: var(--blue); }
+    .pk-rot-btn span { font-size: 11px; font-weight: 600; color: var(--ink-3); transition: color .2s; }
+    .pk-rot-btn:hover span, .pk-rot-btn.active span { color: var(--blue); }
+    .pk-rot-check { position: absolute; top: 5px; right: 5px; width: 15px; height: 15px; border-radius: 50%; background: var(--blue); display: none; align-items: center; justify-content: center; }
+    .pk-rot-check svg { width: 9px; height: 9px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-rot-btn.active .pk-rot-check { display: flex; }
 
-    .pk-footer-meta svg {
-        width: 12px;
-        height: 12px;
-        stroke: var(--ink-4);
-        fill: none;
-        stroke-width: 1.5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        flex-shrink: 0;
-    }
+    .pk-apply-btn { width: 100%; background: var(--blue); color: #fff; border: none; padding: 11px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all .15s; font-family: inherit; margin-top: 12px; box-shadow: 0 2px 8px rgba(37,99,235,.2); }
+    .pk-apply-btn:hover { background: var(--blue-dk); box-shadow: 0 4px 14px rgba(37,99,235,.25); }
+    .pk-apply-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Footer ── */
+    .pk-footer-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding-top: 6px; }
+    .pk-footer-meta { font-size: 12px; color: var(--ink-4); display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+    .pk-footer-meta svg { width: 13px; height: 13px; stroke: var(--ink-4); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
     /* ── Responsive ── */
-    @@media (max-width: 640px) {
-        .pk-hero, .pk-content { padding-left: 16px; padding-right: 16px; }
-        .pk-topbar { padding: 0 16px; }
-        .pk-gpio-row { grid-template-columns: 44px 1fr; }
-        .pk-gpio-actions { grid-column: 1 / -1; }
-        .pk-vbox { flex: 0 0 100%; }
+    @@media (max-width: 900px) {
+        .pk-stat-row { grid-template-columns: 1fr; }
+        .pk-info-row { grid-template-columns: 1fr; }
+        .pk-two-col  { grid-template-columns: 1fr; }
     }
+    @@media (max-width: 640px) {
+        .pk-topbar  { padding: 0 16px; height: 54px; }
+        .pk-hero    { padding: 20px 16px; }
+        .pk-content { padding: 16px 16px 48px; }
+        .pk-stat-row { gap: 10px; }
+        .pk-info-row { gap: 10px; }
+        .pk-stat  { padding: 14px; gap: 10px; }
+        .pk-stat-value { font-size: 18px; }
+        .pk-storage-card { padding: 14px; gap: 12px; }
+        .pk-gpio-compact { padding: 14px; }
+        .pk-hero-title { font-size: 20px; }
+        .pk-card-body { padding: 16px; }
+        .pk-gpio-row { grid-template-columns: 40px 1fr; gap: 10px; }
+        .pk-gpio-actions { grid-column: 1 / -1; }
+        .pk-gpio-row > form:last-child { grid-column: 1 / -1; text-align: right; }
+        .pk-screen-frame { width: 72px; height: 46px; }
+        .pk-screen-stage { padding: 20px; }
+        .pk-kiosk-layout { gap: 18px; }
+        .pk-kiosk-controls { max-width: none; }
+        .pk-footer-bar { flex-direction: column; align-items: flex-start; }
+    }
+    @@media (max-width: 420px) {
+        .pk-gpio-monitor-grid { gap: 6px; }
+        .gpio-monitor-item { min-width: 52px; padding: 8px 6px; }
+        .pk-nav-tag { display: none; }
+    }
+
+    /* Kiosk helpers */
+    body.rotate-90  { transform: rotate(90deg);  transform-origin: top left; width: 100vh; height: 100vw; overflow-x: hidden; position: absolute; top: 0; left: 100%; }
+    body.rotate-180 { transform: rotate(180deg); }
+    body.rotate-270 { transform: rotate(270deg); transform-origin: top left; width: 100vh; height: 100vw; overflow-x: hidden; position: absolute; top: 100%; left: 0; }
 </style>
 
-<!-- Topbar -->
+<!-- ── Topbar ── -->
 <div class="pk-topbar">
     <a class="pk-brand" href="#">
         <div class="pk-logo">
-            <svg viewBox="0 0 24 24">
-                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
         </div>
         Parking Management System
     </a>
@@ -562,7 +342,7 @@
     </div>
 </div>
 
-<!-- Hero -->
+<!-- ── Hero ── -->
 <div class="pk-hero">
     <div class="pk-hero-inner">
         <div>
@@ -572,7 +352,7 @@
                 Control Panel
             </div>
             <div class="pk-hero-title">Control Panel</div>
-            <div class="pk-hero-sub">Manage idle video and GPIO state images across all parking zones.</div>
+            <div class="pk-hero-sub">Manage idle video, GPIO state images and kiosk display across all parking zones.</div>
         </div>
         <div class="pk-status-pill">
             <div class="pk-dot"></div>
@@ -581,61 +361,208 @@
     </div>
 </div>
 
-<!-- Content -->
+<!-- ── Content ── -->
 <div class="pk-content">
 
-    <!-- Card 01 — Idle Video -->
+    <div class="pk-storage-bar-card">
+        <div class="pk-sb-head">
+            <div class="pk-sb-head-left">
+                <div class="pk-sb-icon">
+                    <svg viewBox="0 0 24 24">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                        <path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+                        <path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="pk-sb-label">Storage</div>
+                    <div class="pk-sb-title">Disk Storage (SD Card)</div>
+                </div>
+            </div>
+            <div class="pk-sb-pct" style="color:@ringColor;border-color:@ringColor;background:@(ringColor)15;">
+                @ViewBag.UsedPercent%
+            </div>
+        </div>
+
+        <div class="pk-sb-track">
+            <div class="pk-sb-fill"
+                style="width:@(usedPct.ToString("F1"))%;background-color:@ringColor;"></div>
+        </div>
+
+        <div class="pk-sb-foot">
+            <div class="pk-sb-meta">
+                Used <strong>@usedGB.ToString("F1") GB</strong> of <strong>@totalGB GB</strong>
+            </div>
+            <div class="pk-sb-free">
+                Free: <strong>@ViewBag.FreeSpace GB</strong>
+            </div>
+        </div>
+
+        @if (freeGB < 1.0) {
+            <div class="pk-warn-badge" style="margin-top:10px;">⚠️ พื้นที่ใกล้เต็ม!</div>
+        }
+    </div>
+
+    <!-- Card 01: Idle Video -->
     <div class="pk-card">
         <div class="pk-card-head">
             <div class="pk-card-head-left">
+                <div class="pk-card-accent"></div>
                 <div class="pk-card-num">01</div>
                 <span class="pk-card-title">Idle State Video</span>
             </div>
-            <span class="pk-card-meta">MP4 format only &middot; max 200 MB</span>
+            <span class="pk-card-meta">MP4 · max 200 MB</span>
         </div>
         <div class="pk-card-body">
-            <div class="pk-video-wrapper">
-                <div class="pk-vbox">
-                    <video controls>
-                        <source src="/videos/idle.mp4?v=@DateTime.Now.Ticks" type="video/mp4">
-                    </video>
+            <div class="pk-vbox">
+                <video controls>
+                    <source src="/videos/idle.mp4?v=@DateTime.Now.Ticks" type="video/mp4">
+                </video>
+            </div>
+            <p class="pk-upload-hint">
+                Replace the current idle loop displayed on parking screens.
+                Upload a new MP4 file below — changes take effect immediately after saving.
+            </p>
+            <form asp-action="UpdateIdleVideo" method="post" enctype="multipart/form-data">
+                <label class="pk-file-zone" id="videoDropZone">
+                    <div class="pk-fz-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div class="pk-fz-label">Drop file here, or <span>browse files</span></div>
+                    <div class="pk-fz-sub" id="videoFileName">Only .mp4 files are accepted</div>
+                    <input type="file" name="videoFile" accept="video/mp4" required id="videoFileInput">
+                </label>
+                <button type="submit" class="btn-pk-primary">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Save Video
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="pk-two-col">
+
+        <!-- Card 02: Kiosk Display Rotation -->
+        <div class="pk-card">
+            <div class="pk-card-head">
+                <div class="pk-card-head-left">
+                    <div class="pk-card-accent"></div>
+                    <div class="pk-card-num">02</div>
+                    <span class="pk-card-title">Kiosk Display Rotation</span>
                 </div>
-                <div class="pk-upload-panel">
-                    <p class="pk-upload-hint">
-                        Replace the current idle loop displayed on parking screens.
-                        Upload a new MP4 file below — changes take effect immediately after saving.
-                    </p>
-                    <form asp-action="UpdateIdleVideo" method="post" enctype="multipart/form-data">
-                        <label class="pk-file-zone" id="videoDropZone">
-                            <div class="pk-fz-icon">
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                                    <polyline points="17 8 12 3 7 8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
-                                </svg>
+                <span class="pk-card-meta">Screen orientation</span>
+            </div>
+            <div class="pk-card-body">
+                <div class="pk-kiosk-layout">
+
+                    <!-- Screen preview -->
+                    <div class="pk-kiosk-preview">
+                        <div class="pk-screen-stage">
+                            <div id="screenFrame" class="pk-screen-frame">
+                                <div id="screenArrow" class="pk-screen-arrow">
+                                    <svg viewBox="0 0 24 24">
+                                        <line x1="12" y1="19" x2="12" y2="5"/>
+                                        <polyline points="5 12 12 5 19 12"/>
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="pk-fz-label">Drop file here, or <span>browse files</span></div>
-                            <div class="pk-fz-sub" id="videoFileName">Only .mp4 files are accepted</div>
-                            <input type="file" name="videoFile" accept="video/mp4" required id="videoFileInput">
-                        </label>
-                        <button type="submit" class="btn-pk-primary">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                            </svg>
-                            Save Video
+                            <div class="pk-screen-stand"></div>
+                            <div id="orientLabel" class="pk-orient-label">0° — Landscape</div>
+                        </div>
+                    </div>
+
+                    <!-- 2×2 rotation buttons -->
+                    <div class="pk-kiosk-controls">
+                        <div class="pk-rot-grid">
+
+                            <button type="button" class="pk-rot-btn active"
+                                    data-deg="0" data-label="Landscape" data-arrow-rotate="0"
+                                    onclick="selectRot(this)">
+                                <div class="pk-rot-check"><svg viewBox="0 0 8 8"><polyline points="1 4 3 6 7 2"/></svg></div>
+                                <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2"/><line x1="10" y1="19" x2="14" y2="21"/><line x1="10" y1="21" x2="14" y2="21"/></svg>
+                                <span>0°</span>
+                            </button>
+
+                            <button type="button" class="pk-rot-btn"
+                                    data-deg="90" data-label="Portrait" data-arrow-rotate="90"
+                                    onclick="selectRot(this)">
+                                <div class="pk-rot-check"><svg viewBox="0 0 8 8"><polyline points="1 4 3 6 7 2"/></svg></div>
+                                <svg viewBox="0 0 24 24"><rect x="6" y="2" width="13" height="20" rx="2"/></svg>
+                                <span>90°</span>
+                            </button>
+
+                            <button type="button" class="pk-rot-btn"
+                                    data-deg="180" data-label="Flipped" data-arrow-rotate="180"
+                                    onclick="selectRot(this)">
+                                <div class="pk-rot-check"><svg viewBox="0 0 8 8"><polyline points="1 4 3 6 7 2"/></svg></div>
+                                <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2"/><polyline points="8 6 12 2 16 6"/></svg>
+                                <span>180°</span>
+                            </button>
+
+                            <button type="button" class="pk-rot-btn"
+                                    data-deg="270" data-label="Portrait (L)" data-arrow-rotate="270"
+                                    onclick="selectRot(this)">
+                                <div class="pk-rot-check"><svg viewBox="0 0 8 8"><polyline points="1 4 3 6 7 2"/></svg></div>
+                                <svg viewBox="0 0 24 24"><rect x="6" y="2" width="13" height="20" rx="2"/><polyline points="6 8 2 12 6 16"/></svg>
+                                <span>270°</span>
+                            </button>
+
+                        </div>
+
+                        <button type="button" class="pk-apply-btn" onclick="applyKioskRotation()">
+                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                            Update Kiosk Screen
                         </button>
-                    </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- GPIO Live Monitor -->
+        <div class="pk-gpio-compact">
+            <div class="pk-gpio-compact-head">
+                <div class="pk-gpio-compact-head-left">
+                    <div style="width:3px;height:14px;border-radius:2px;background:var(--green-dot);flex-shrink:0;"></div>
+                    <span class="pk-gpio-compact-title">GPIO Live Monitor</span>
+                </div>
+                <span id="connection-status" class="pk-conn-badge off">Disconnected</span>
+            </div>
+            <div class="pk-gpio-monitor-grid">
+                @foreach (var pin in monitorPins)
+                {
+                    <div id="admin-pin-@pin" class="gpio-monitor-item">
+                        <div class="gpio-led"></div>
+                        <span class="gpio-label">PIN @pin</span>
+                    </div>
+                }
+            </div>
+            <div style="display:flex;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border-lt);justify-content:center;">
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-3);font-weight:500;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.4);"></div>
+                    Active
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-3);font-weight:500;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#cbd5e1;"></div>
+                    Inactive
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Card 02 — GPIO State Images -->
+    <!-- Card 03: GPIO State Images -->
     <div class="pk-card">
         <div class="pk-card-head">
             <div class="pk-card-head-left">
-                <div class="pk-card-num">02</div>
+                <div class="pk-card-accent"></div>
+                <div class="pk-card-num">03</div>
                 <span class="pk-card-title">GPIO State Images</span>
             </div>
             <span class="pk-card-meta">@Model.Count() state(s) configured</span>
@@ -644,9 +571,8 @@
             @foreach (var item in Model)
             {
                 <div class="pk-gpio-row">
-                    <img src="/uploads/@item.ImagePath"
-                         class="pk-thumb"
-                         onerror="this.src='https://placehold.co/52x52/F3F4F6/9CA3AF?text=?'" />
+                    <img src="/uploads/@item.ImagePath" class="pk-thumb"
+                         onerror="this.src='https://placehold.co/44x44/F3F4F6/9CA3AF?text=?'" />
                     <div>
                         <div class="pk-gpio-name">@item.StateName</div>
                         <div class="pk-gpio-pin">
@@ -659,7 +585,7 @@
                     </div>
                     <div class="pk-gpio-actions">
                         <form asp-action="UpdateStateImage" method="post" enctype="multipart/form-data"
-                              style="display:flex;align-items:center;gap:8px;">
+                              style="display:flex;align-items:center;gap:6px;">
                             <input type="hidden" name="id" value="@item.Id" />
                             <div class="pk-file-wrap">
                                 <span class="pk-file-btn" id="label-@item.Id">Choose image</span>
@@ -672,16 +598,14 @@
                     <form asp-action="DeleteStateImage" method="post">
                         <input type="hidden" name="id" value="@item.Id" />
                         <button type="submit" class="btn-pk-danger"
-                                onclick="return confirm('Remove this state image?')">
-                            Remove
-                        </button>
+                                onclick="return confirm('Remove this state image?')">Remove</button>
                     </form>
                 </div>
             }
         </div>
     </div>
 
-    <!-- Footer -->
+    <!-- ── Footer ── -->
     <div class="pk-footer-bar">
         <div class="pk-footer-meta">
             <svg viewBox="0 0 24 24">
@@ -696,25 +620,92 @@
                 <polyline points="14 2 14 8 20 8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/>
                 <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
             </svg>
             View 90-Day Log History
         </a>
     </div>
 
-</div>
+</div><!-- /pk-content -->
 
+<script src="~/js/signalr.min.js"></script>
 <script>
-    // Show selected filename in the video drop zone
+    // ── Video upload ──
     document.getElementById('videoFileInput')?.addEventListener('change', function () {
         const label = document.getElementById('videoFileName');
         if (label) label.textContent = this.files[0]?.name ?? 'Only .mp4 files are accepted';
     });
-
-    // Drag-and-drop highlight for video zone
     const zone = document.getElementById('videoDropZone');
     if (zone) {
-        ['dragenter', 'dragover'].forEach(e => zone.addEventListener(e, () => zone.style.background = '#EFF6FF', false));
-        ['dragleave', 'drop'].forEach(e => zone.addEventListener(e, () => zone.style.background = '', false));
+        ['dragenter','dragover'].forEach(e => zone.addEventListener(e, () => zone.style.background = '#EFF6FF'));
+        ['dragleave','drop'].forEach(e => zone.addEventListener(e, () => zone.style.background = ''));
     }
+
+    // ── Kiosk Rotation ──
+    let currentDeg = 0;
+
+    function selectRot(btn) {
+        currentDeg = parseInt(btn.dataset.deg);
+        const label    = btn.dataset.label;
+        const arrowRot = parseInt(btn.dataset.arrowRotate);
+        const frame    = document.getElementById('screenFrame');
+        const arrow    = document.getElementById('screenArrow');
+        const orientLbl= document.getElementById('orientLabel');
+        const statVal  = document.getElementById('stat-rot-val');
+
+        arrow.style.transform = `rotate(${arrowRot}deg)`;
+        orientLbl.textContent = `${currentDeg}° — ${label}`;
+        if (statVal) statVal.textContent = `${currentDeg}°`;
+
+        if (currentDeg === 90 || currentDeg === 270) {
+            frame.style.width = '56px'; frame.style.height = '88px'; frame.style.borderRadius = '5px 5px 6px 6px';
+        } else {
+            frame.style.width = '88px'; frame.style.height = '56px'; frame.style.borderRadius = '6px';
+        }
+
+        document.querySelectorAll('.pk-rot-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function applyKioskRotation() {
+        localStorage.setItem('screenRotation', currentDeg);
+        const btn  = document.querySelector('.pk-apply-btn');
+        const orig = btn.innerHTML;
+        btn.style.background = '#22c55e';
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Saved!';
+        setTimeout(() => { btn.style.background = ''; btn.innerHTML = orig; }, 2000);
+    }
+
+    // Restore saved rotation on load
+    (function () {
+        const saved = parseInt(localStorage.getItem('screenRotation') || '0');
+        const btn   = document.querySelector(`.pk-rot-btn[data-deg="${saved}"]`);
+        if (btn) selectRot(btn);
+    })();
+
+    // ── SignalR GPIO ──
+    const statusBadge = document.getElementById('connection-status');
+
+    const adminConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/parkingHub")
+        .withAutomaticReconnect()
+        .build();
+
+    adminConnection.on("ReceiveStatus", (imagePath, hasCar, activePin) => {
+        document.querySelectorAll('.gpio-monitor-item').forEach(el => el.classList.remove('active'));
+        if (activePin !== -1) {
+            document.getElementById('admin-pin-' + activePin)?.classList.add('active');
+        }
+    });
+
+    async function startAdminSignalR() {
+        try {
+            await adminConnection.start();
+            statusBadge.textContent = 'Live';
+            statusBadge.className = 'pk-conn-badge live';
+        } catch {
+            setTimeout(startAdminSignalR, 2000);
+        }
+    }
+
+    startAdminSignalR();
 </script>
