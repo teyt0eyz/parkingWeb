@@ -194,27 +194,5 @@ public class AdminController : Controller
             return RedirectToAction("ViewLogs");
         }
     }
-    [HttpPost]
-    public async Task<IActionResult> TestLog(int pin, string status)
-    {
-        try
-        {
-            // 1. บันทึกลง Log CSV
-            _logger.SaveLog(pin, status);
-
-            // 2. (แถม) ส่ง SignalR ไปอัปเดตหน้าจอ Kiosk และหน้า Admin Monitor ด้วย
-            // หาข้อมูลรูปภาพจาก DB ตาม Pin ที่กด
-            var state = _db.ParkingStates.FirstOrDefault(s => s.GpioPin == pin);
-            string imagePath = state?.ImagePath ?? "";
-            bool hasCar = status.Contains("Parked") || status.Contains("เข้าจอด");
-
-            await _hubContext.Clients.All.SendAsync("ReceiveStatus", imagePath, hasCar, pin);
-
-            return Ok(new { message = $"Test log for PIN {pin} saved!" });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ex.Message);
-        }
-    }
+   
 }
