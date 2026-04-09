@@ -552,8 +552,13 @@
             }
             else
             {
-                @foreach (var fileName in Model)
+                @foreach (var item in Model)
                 {
+                    // ✅ 1. แยกก้อนข้อมูล
+                    var itemParts = item.Split('|');
+                    var fileName = itemParts[0]; 
+                    var fileSize = itemParts.Length > 1 ? (long.Parse(itemParts[1]) / 1024).ToString() : "0";
+
                     <div class="pk-log-item" data-name="@fileName">
                         <div class="pk-log-icon">
                             <svg viewBox="0 0 24 24">
@@ -563,17 +568,21 @@
                                 <line x1="3" y1="10" x2="21" y2="10"/>
                             </svg>
                         </div>
+
                         <div>
                             @{
-                                // แยกส่วนปี-เดือน-วัน ออกมาเพื่อจัดเรียงใหม่แบบไทย
-                                var parts = fileName.Replace(".csv", "").Split('-');
-                                var thaiDisplayDate = $"{parts[2]}-{parts[1]}-{parts[0]}";
+                                var dateParts = fileName.Replace(".csv", "").Split('-');
+                                var thaiDate = $"{dateParts[2]}-{dateParts[1]}-{dateParts[0]}";
                             }
-                            <div class="pk-log-date">รายงานประจำวันที่ @thaiDisplayDate</div>
-                            <div class="pk-log-sub">ไฟล์รายวัน &middot; CSV</div>
+                            <div class="pk-log-date">รายงานประจำวันที่ @thaiDate</div>
+                            <div class="pk-log-sub">ไฟล์รายวัน &middot; CSV &middot; @fileSize KB</div>
                         </div>
+
                         <span class="pk-log-badge">CSV</span>
-                        <a class="btn-pk-view" asp-action="LogDetails" asp-route-fileName="@fileName">
+                        
+                        <a class="btn-pk-view" 
+                        asp-action="LogDetails" 
+                        asp-route-fileName="@fileName">
                             <svg viewBox="0 0 24 24">
                                 <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
                                 <polyline points="15 3 21 3 21 9"/>

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ParkingWeb.Data;
+using Microsoft.AspNetCore.SignalR;
+using ParkingWeb.Hubs;
 using ParkingWeb.Models;
 using ParkingWeb.Services;
 using System.Runtime.InteropServices;
@@ -11,8 +13,8 @@ public class AdminController : Controller
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _env;
     private readonly LogService _logger;
-
-    public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger)
+    private readonly IHubContext<ParkingHub> _hubContext;
+    public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger,IHubContext<ParkingHub> hubContext)
     {
         _db = db;
         _env = env;
@@ -127,7 +129,8 @@ public class AdminController : Controller
         // เพราะมันจำค่าแยกตาม Browser ได้ดี
         return Ok(new { degree = degree });
     }
-    // 5. ระบบดูรายการ Log ย้อนหลัง
+    
+    // 5. ระบบดูรายการ Log ย้อนหลัง (เก็บส่วนคำนวณพื้นที่ไว้ครบถ้วน)
     public IActionResult ViewLogs()
     {
         string logFolder = Path.Combine(_env.ContentRootPath, "ParkingLogs");
@@ -135,20 +138,20 @@ public class AdminController : Controller
 
         var files = Directory.GetFiles(logFolder, "*.csv");
         
-        // 1. คำนวณพื้นที่ Log รวม
+        // 1. คำนวณพื้นที่ Log รวม (ของเดิม Toey)
         long totalLogBytes = files.Select(f => new FileInfo(f).Length).Sum();
         ViewBag.TotalLogSize = (totalLogBytes / (1024.0 * 1024.0)).ToString("F2") + " MB";
 
-        // 2. คำนวณพื้นที่ SD Card ทั้งหมด (Total Drive Size)
+        // 2. คำนวณพื้นที่ SD Card ทั้งหมด (ของเดิม Toey)
         string drivePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "/" : "C";
         var drive = new DriveInfo(drivePath);
         ViewBag.TotalDriveSize = (drive.TotalSize / (1024.0 * 1024.0 * 1024.0)).ToString("F2") + " GB";
 
-        // 3. ส่ง Model เป็น List ที่เก็บ "ชื่อไฟล์|ขนาดไบต์" เพื่อเอาไป Sort ในหน้าเว็บ
+        // 3. ส่ง Model เป็น "ชื่อไฟล์|ขนาดไบต์"
         var logs = files.Select(f => $"{Path.GetFileName(f)}|{new FileInfo(f).Length}")
-                        .OrderByDescending(f => f) // เริ่มต้นด้วยวันที่ล่าสุด
+                        .OrderByDescending(f => f)
                         .ToList();
-                        
+                            
         return View(logs); 
     }
 
@@ -161,44 +164,57 @@ public class AdminController : Controller
         return File(System.IO.File.ReadAllBytes(filePath), "text/csv", fileName);
     }
 
+
     // 7. ระบบดูรายละเอียด Log ข้างในไฟล์ (แสดงเป็นตาราง)
     [HttpGet]
-    public IActionResult LogDetails(string fileName) // <-- ตรวจสอบว่าชื่อตัวแปรคือ fileName
+    public IActionResult LogDetails(string fileName)
     {
-        // 1. ถ้าไม่มีชื่อไฟล์ส่งมา ให้เด้งกลับ (นี่คือสาเหตุที่ Toey อยู่หน้าเดิม)
-        if (string.IsNullOrEmpty(fileName)) 
-        {
-            return RedirectToAction("ViewLogs");
-        }
+        if (string.IsNullOrEmpty(fileName)) return RedirectToAction("ViewLogs");
 
-        // 2. จัดการเรื่องนามสกุลไฟล์ให้เป๊ะ
-        string cleanFileName = fileName.Replace(".csv", "");
-        string fullFileName = cleanFileName + ".csv";
-        
-        // 3. ระบุ Path ให้ตรงกับที่ LogService ใช้ (ContentRootPath)
-        string logFolder = Path.Combine(_env.ContentRootPath, "ParkingLogs");
-        string filePath = Path.Combine(logFolder, fullFileName);
+        // ตรวจสอบนามสกุล
+        string fullFileName = fileName.EndsWith(".csv") ? fileName : fileName + ".csv";
+        string filePath = Path.Combine(_env.ContentRootPath, "ParkingLogs", fullFileName);
 
-        // 4. ถ้าหาไฟล์ไม่เจอจริงๆ ให้เด้งกลับหน้าเดิมพร้อมแจ้งเตือน
         if (!System.IO.File.Exists(filePath))
         {
-            // เก็บข้อความไว้โชว์หน้า ViewLogs ว่าทำไมถึงเข้าไม่ได้
-            TempData["Error"] = $"หาไฟล์ไม่เจอที่: {filePath}"; 
+            TempData["Error"] = $"หาไฟล์ไม่เจอที่: {filePath}";
             return RedirectToAction("ViewLogs");
         }
 
         try 
         {
-            // 5. อ่านไฟล์ด้วย UTF8
+            // อ่านไฟล์ด้วย UTF8 ป้องกันภาษาไทยพัง
             var lines = System.IO.File.ReadAllLines(filePath, System.Text.Encoding.UTF8).ToList();
-            
-            ViewBag.FileName = cleanFileName;
+            ViewBag.FileName = fullFileName.Replace(".csv", "");
             return View(lines);
         }
         catch (Exception ex)
         {
             TempData["Error"] = $"เกิดข้อผิดพลาดในการอ่านไฟล์: {ex.Message}";
             return RedirectToAction("ViewLogs");
+        }
+    }
+    [HttpPost]
+    public async Task<IActionResult> TestLog(int pin, string status)
+    {
+        try
+        {
+            // 1. บันทึกลง Log CSV
+            _logger.SaveLog(pin, status);
+
+            // 2. (แถม) ส่ง SignalR ไปอัปเดตหน้าจอ Kiosk และหน้า Admin Monitor ด้วย
+            // หาข้อมูลรูปภาพจาก DB ตาม Pin ที่กด
+            var state = _db.ParkingStates.FirstOrDefault(s => s.GpioPin == pin);
+            string imagePath = state?.ImagePath ?? "";
+            bool hasCar = status.Contains("Parked") || status.Contains("เข้าจอด");
+
+            await _hubContext.Clients.All.SendAsync("ReceiveStatus", imagePath, hasCar, pin);
+
+            return Ok(new { message = $"Test log for PIN {pin} saved!" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
         }
     }
 }

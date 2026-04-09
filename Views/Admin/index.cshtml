@@ -624,7 +624,56 @@
             View 90-Day Log History
         </a>
     </div>
+    <div class="pk-card" style="margin-top: 40px; border: 2px dashed #f87171; background: #fffafb;">
+        <div class="pk-card-head" style="background: #fef2f2;">
+            <div class="pk-card-head-left">
+                <span class="pk-card-title" style="color: #991b1b;">🛠️ Developer Test Tools</span>
+            </div>
+            <span style="font-size: 10px; color: #f87171; font-weight: bold;">TEMPORARY ONLY</span>
+        </div>
+        <div class="pk-card-body">
+            <p style="font-size: 12px; color: #7f1d1d; margin-bottom: 15px;">
+                กดปุ่มเพื่อจำลองสถานะการจอดรถ (ใช้ทดสอบการบันทึก Log และการเปลี่ยนหน้าจอ)
+            </p>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                @foreach (var pin in monitorPins)
+                {
+                    <div style="display: flex; flex-direction: column; gap: 5px; padding: 10px; border: 1px solid #fee2e2; border-radius: 8px; background: white;">
+                        <strong style="font-size: 11px;">PIN @pin</strong>
+                        <button type="button" onclick="sendTestLog(@pin, 'รถเข้าจอด (Test)')" 
+                                style="background: #22c55e; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            IN
+                        </button>
+                        <button type="button" onclick="sendTestLog(@pin, 'รถออก (Test)')" 
+                                style="background: #64748b; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            OUT
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 
+    <script>
+        async function sendTestLog(pin, status) {
+            try {
+                const response = await fetch(`/Admin/TestLog?pin=${pin}&status=${status}`, { 
+                    method: 'POST' 
+                });
+                if (response.ok) {
+                    console.log(`✅ Test log saved for PIN ${pin}`);
+                    // แสดงผลเล็กน้อยว่ากดติดแล้ว
+                    const badge = document.getElementById('connection-status');
+                    const originalText = badge.textContent;
+                    badge.textContent = 'Log Saved!';
+                    setTimeout(() => badge.textContent = originalText, 1000);
+                }
+            } catch (err) {
+                alert("Test failed: " + err);
+            }
+        }
+    </script>
 </div><!-- /pk-content -->
 
 <script src="~/js/signalr.min.js"></script>
