@@ -16,7 +16,6 @@
     double circumference = 2 * Math.PI * r;
     double dashOffset    = circumference - (usedPct / 100.0) * circumference;
 
-    int[] monitorPins = { 17, 27, 22, 23, 24 };
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -146,31 +145,6 @@
     .pk-sb-free strong { color: var(--ink-2); font-weight: 700; }
 
     .pk-warn-badge { display: inline-flex; align-items: center; gap: 4px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 600; margin-top: 5px; }
-
-    /* GPIO compact card */
-    .pk-gpio-compact {
-        background: var(--white); border: 1px solid var(--border);
-        border-radius: var(--radius-lg); padding: 20px;
-        transition: all .2s ease;
-        display: flex; flex-direction: column;
-    }
-    .pk-gpio-compact:hover { box-shadow: 0 4px 14px rgba(0,0,0,.06); transform: translateY(-1px); }
-    .pk-gpio-compact-head {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-bottom: 14px;
-    }
-    .pk-gpio-compact-head-left { display: flex; align-items: center; gap: 8px; }
-    .pk-gpio-compact-title { font-size: 13px; font-weight: 700; color: var(--ink); }
-    .pk-gpio-monitor-grid { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; flex: 1; align-items: center; }
-    .gpio-monitor-item { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 10px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-md); min-width: 56px; transition: all .3s ease; }
-    .gpio-led { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; box-shadow: inset 0 1px 3px rgba(0,0,0,.1); transition: all .3s ease; }
-    .gpio-label { font-size: 9px; font-weight: 600; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; }
-    .gpio-monitor-item.active { border-color: var(--green-bd); background: var(--green-lt); }
-    .gpio-monitor-item.active .gpio-led { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,.5); }
-    .gpio-monitor-item.active .gpio-label { color: var(--green-tx); }
-    .pk-conn-badge { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; border-radius: 6px; padding: 4px 10px; }
-    .pk-conn-badge.live { background: var(--green-lt); color: var(--green-tx); border: 1px solid var(--green-bd); }
-    .pk-conn-badge.off  { background: var(--red-lt); color: var(--red); border: 1px solid var(--red-bd); }
 
     /* ── Two-col ── */
     .pk-two-col {
@@ -304,7 +278,6 @@
         .pk-stat  { padding: 14px; gap: 10px; }
         .pk-stat-value { font-size: 18px; }
         .pk-storage-card { padding: 14px; gap: 12px; }
-        .pk-gpio-compact { padding: 14px; }
         .pk-hero-title { font-size: 20px; }
         .pk-card-body { padding: 16px; }
         .pk-gpio-row { grid-template-columns: 40px 1fr; gap: 10px; }
@@ -317,8 +290,6 @@
         .pk-footer-bar { flex-direction: column; align-items: flex-start; }
     }
     @@media (max-width: 420px) {
-        .pk-gpio-monitor-grid { gap: 6px; }
-        .gpio-monitor-item { min-width: 52px; padding: 8px 6px; }
         .pk-nav-tag { display: none; }
     }
 
@@ -447,10 +418,8 @@
         </div>
     </div>
 
-    <div class="pk-two-col">
-
-        <!-- Card 02: Kiosk Display Rotation -->
-        <div class="pk-card">
+    <!-- Card 02: Kiosk Display Rotation -->
+    <div class="pk-card">
             <div class="pk-card-head">
                 <div class="pk-card-head-left">
                     <div class="pk-card-accent"></div>
@@ -526,37 +495,6 @@
             </div>
         </div>
 
-        <!-- GPIO Live Monitor -->
-        <div class="pk-gpio-compact">
-            <div class="pk-gpio-compact-head">
-                <div class="pk-gpio-compact-head-left">
-                    <div style="width:3px;height:14px;border-radius:2px;background:var(--green-dot);flex-shrink:0;"></div>
-                    <span class="pk-gpio-compact-title">GPIO Live Monitor</span>
-                </div>
-                <span id="connection-status" class="pk-conn-badge off">Disconnected</span>
-            </div>
-            <div class="pk-gpio-monitor-grid">
-                @foreach (var pin in monitorPins)
-                {
-                    <div id="admin-pin-@pin" class="gpio-monitor-item">
-                        <div class="gpio-led"></div>
-                        <span class="gpio-label">PIN @pin</span>
-                    </div>
-                }
-            </div>
-            <div style="display:flex;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border-lt);justify-content:center;">
-                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-3);font-weight:500;">
-                    <div style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.4);"></div>
-                    Active
-                </div>
-                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-3);font-weight:500;">
-                    <div style="width:10px;height:10px;border-radius:50%;background:#cbd5e1;"></div>
-                    Inactive
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Card 03: GPIO State Images -->
     <div class="pk-card">
         <div class="pk-card-head">
@@ -629,7 +567,6 @@
     
 </div><!-- /pk-content -->
 
-<script src="~/js/signalr.min.js"></script>
 <script>
     // ── Video upload ──
     document.getElementById('videoFileInput')?.addEventListener('change', function () {
@@ -693,30 +630,4 @@
         if (btn) selectRot(btn);
     })();
 
-    // ── SignalR GPIO ──
-    const statusBadge = document.getElementById('connection-status');
-
-    const adminConnection = new signalR.HubConnectionBuilder()
-        .withUrl("/parkingHub")
-        .withAutomaticReconnect()
-        .build();
-
-    adminConnection.on("ReceiveStatus", (imagePath, hasCar, activePin) => {
-        document.querySelectorAll('.gpio-monitor-item').forEach(el => el.classList.remove('active'));
-        if (activePin !== -1) {
-            document.getElementById('admin-pin-' + activePin)?.classList.add('active');
-        }
-    });
-
-    async function startAdminSignalR() {
-        try {
-            await adminConnection.start();
-            statusBadge.textContent = 'Live';
-            statusBadge.className = 'pk-conn-badge live';
-        } catch {
-            setTimeout(startAdminSignalR, 2000);
-        }
-    }
-
-    startAdminSignalR();
 </script>

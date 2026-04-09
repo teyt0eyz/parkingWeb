@@ -4,79 +4,300 @@
     int[] monitorPins = { 17, 27, 22, 23, 24 };
 }
 
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-        --dev-bg: #0f172a;
-        --dev-card: #1e293b;
-        --dev-border: #334155;
-        --dev-green: #22c55e;
-        --dev-red: #ef4444;
-        --dev-text: #f1f5f9;
+        --blue:       #2563EB;
+        --blue-dk:    #1D4ED8;
+        --blue-lt:    #EFF6FF;
+        --blue-bd:    #BFDBFE;
+        --ink:        #0F172A;
+        --ink-2:      #334155;
+        --ink-3:      #64748B;
+        --ink-4:      #94A3B8;
+        --bg:         #F8FAFC;
+        --white:      #ffffff;
+        --border:     #E2E8F0;
+        --border-lt:  #F1F5F9;
+        --green-lt:   #F0FDF4;
+        --green-bd:   #BBF7D0;
+        --green-tx:   #166534;
+        --green-dot:  #16A34A;
+        --red:        #ef4444;
+        --red-lt:     #FEF2F2;
+        --red-bd:     #FECACA;
+        --red-tx:     #991B1B;
+        --amber:      #F59E0B;
+        --amber-lt:   #FFFBEB;
+        --amber-bd:   #FDE68A;
+        --amber-tx:   #92400E;
+        --radius-sm:  8px;
+        --radius-md:  10px;
+        --radius-lg:  14px;
     }
 
-    body { background: var(--dev-bg); color: var(--dev-text); font-family: 'JetBrains Mono', monospace; }
-    
-    .dev-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
-    .dev-header { border-bottom: 2px solid var(--dev-border); padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-    
-    .pin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-    .pin-card { background: var(--dev-card); border: 1px solid var(--dev-border); border-radius: 12px; padding: 20px; transition: all 0.2s; }
-    .pin-card:hover { border-color: var(--dev-green); box-shadow: 0 0 15px rgba(34, 197, 94, 0.2); }
-    
-    .pin-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .pin-name { font-weight: 600; font-size: 16px; color: var(--dev-green); }
-    .pin-number { opacity: 0.6; font-size: 12px; }
-
-    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .dev-btn { 
-        border: none; padding: 12px; border-radius: 6px; cursor: pointer; 
-        font-family: inherit; font-weight: 600; transition: opacity 0.2s; 
+    body {
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        font-size: 14px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
     }
-    .btn-in { background: var(--dev-green); color: #052e16; }
-    .btn-out { background: var(--dev-red); color: #450a0a; }
-    .dev-btn:active { opacity: 0.7; transform: scale(0.98); }
 
-    .status-terminal { 
-        margin-top: 30px; background: #000; border: 1px solid var(--dev-border); 
-        padding: 15px; border-radius: 8px; font-size: 12px; height: 150px; overflow-y: auto;
+    /* ── Topbar ── */
+    .pk-topbar {
+        background: var(--white); border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 28px; height: 58px; position: sticky; top: 0; z-index: 100;
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
     }
-    .log-entry { margin-bottom: 5px; border-left: 2px solid var(--dev-green); padding-left: 10px; }
+    .pk-brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: var(--ink); text-decoration: none; letter-spacing: -.2px; }
+    .pk-logo { width: 34px; height: 34px; background: var(--blue); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,.25); }
+    .pk-logo svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-nav-tag { font-size: 10px; color: var(--ink-3); background: var(--border-lt); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-family: 'JetBrains Mono', monospace; font-weight: 500; letter-spacing: .3px; }
+    .pk-avatar { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--amber-lt), var(--amber-bd)); border: 1.5px solid #FCD34D; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--amber-tx); letter-spacing: -.3px; }
+
+    /* ── Hero ── */
+    .pk-hero { background: var(--white); border-bottom: 1px solid var(--border); padding: 26px 32px; }
+    .pk-hero-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+    .pk-crumb { font-size: 11px; color: var(--ink-4); display: flex; align-items: center; gap: 5px; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+    .pk-crumb svg { width: 9px; height: 9px; stroke: var(--ink-4); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-hero-title { font-size: 24px; font-weight: 700; color: var(--ink); letter-spacing: -.4px; }
+    .pk-hero-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+    .pk-dev-badge { display: flex; align-items: center; gap: 8px; background: var(--amber-lt); border: 1px solid var(--amber-bd); border-radius: 100px; padding: 8px 16px; font-size: 12px; color: var(--amber-tx); font-weight: 600; white-space: nowrap; }
+    .pk-dev-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); flex-shrink: 0; }
+
+    /* ── Content ── */
+    .pk-content { max-width: 1180px; margin: 0 auto; padding: 24px 32px 56px; display: flex; flex-direction: column; gap: 18px; }
+
+    /* ── Card ── */
+    .pk-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .pk-card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--border-lt); }
+    .pk-card-head-left { display: flex; align-items: center; gap: 9px; }
+    .pk-card-accent { width: 3px; height: 17px; border-radius: 2px; flex-shrink: 0; }
+    .pk-card-accent.green { background: var(--green-dot); }
+    .pk-card-accent.amber { background: var(--amber); }
+    .pk-card-accent.blue  { background: var(--blue); }
+    .pk-card-num { width: 22px; height: 22px; background: var(--white); border: 1px solid var(--border); border-radius: 6px; font-size: 10px; font-weight: 700; color: var(--ink-3); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; }
+    .pk-card-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+    .pk-card-meta { font-size: 11px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+    .pk-card-body { padding: 20px; }
+
+    /* ── Pin Grid (GPIO Simulation) ── */
+    .pin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+    .pin-card {
+        background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-md);
+        padding: 16px; transition: all .2s ease;
+    }
+    .pin-card:hover { border-color: var(--green-bd); background: var(--green-lt); box-shadow: 0 4px 14px rgba(0,0,0,.05); transform: translateY(-1px); }
+    .pin-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
+    .pin-name { font-weight: 700; font-size: 13px; color: var(--ink); line-height: 1.4; }
+    .pin-number { font-size: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--blue); background: var(--blue-lt); border: 1px solid var(--blue-bd); border-radius: 5px; padding: 2px 7px; white-space: nowrap; flex-shrink: 0; }
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .dev-btn {
+        border: none; padding: 9px 6px; border-radius: var(--radius-sm); cursor: pointer;
+        font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; font-weight: 600;
+        transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .btn-in  { background: var(--green-lt); color: var(--green-tx); border: 1.5px solid var(--green-bd); }
+    .btn-in:hover  { background: #dcfce7; border-color: var(--green-dot); }
+    .btn-out { background: var(--red-lt); color: var(--red-tx); border: 1.5px solid var(--red-bd); }
+    .btn-out:hover { background: #fee2e2; border-color: var(--red); }
+    .dev-btn:active { transform: scale(0.97); opacity: .85; }
+
+    /* ── Two-col ── */
+    .pk-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+
+    /* ── GPIO Live Monitor ── */
+    .pk-gpio-monitor-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .gpio-monitor-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-md); min-width: 64px; transition: all .3s ease; }
+    .gpio-led { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; box-shadow: inset 0 1px 3px rgba(0,0,0,.1); transition: all .3s ease; }
+    .gpio-label { font-size: 10px; font-weight: 600; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; }
+    .gpio-monitor-item.active { border-color: var(--green-bd); background: var(--green-lt); }
+    .gpio-monitor-item.active .gpio-led { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,.5); }
+    .gpio-monitor-item.active .gpio-label { color: var(--green-tx); }
+    .pk-conn-badge { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; border-radius: 6px; padding: 4px 10px; }
+    .pk-conn-badge.live { background: var(--green-lt); color: var(--green-tx); border: 1px solid var(--green-bd); }
+    .pk-conn-badge.off  { background: var(--red-lt); color: var(--red); border: 1px solid var(--red-bd); }
+    .pk-legend { display: flex; gap: 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-lt); }
+    .pk-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-3); font-weight: 500; }
+
+    /* ── Activity Terminal ── */
+    .dev-terminal {
+        background: #0f172a; border: 1px solid #1e293b;
+        border-radius: var(--radius-md); padding: 16px;
+        font-size: 12px; height: 200px; overflow-y: auto;
+        font-family: 'JetBrains Mono', monospace; line-height: 1.7;
+    }
+    .log-entry { margin-bottom: 2px; border-left: 2px solid #22c55e; padding-left: 10px; color: #e2e8f0; }
+    .log-entry .ts { color: #64748b; margin-right: 4px; }
+    .log-entry.boot { border-left-color: #334155; }
+    .log-entry.boot .ts { color: #475569; }
+
+    /* ── Footer ── */
+    .pk-footer-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding-top: 6px; }
+    .pk-footer-meta { font-size: 12px; color: var(--ink-4); display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+    .pk-footer-meta svg { width: 13px; height: 13px; stroke: var(--ink-4); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .btn-pk-secondary { font-size: 13px; font-weight: 600; color: var(--ink-2); background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 18px; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all .15s; }
+    .btn-pk-secondary:hover { background: var(--border-lt); box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+    .btn-pk-secondary svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    @@media (max-width: 900px) {
+        .pk-two-col { grid-template-columns: 1fr; }
+        .pin-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+    @@media (max-width: 640px) {
+        .pk-topbar  { padding: 0 16px; height: 54px; }
+        .pk-hero    { padding: 20px 16px; }
+        .pk-content { padding: 16px 16px 48px; }
+        .pk-hero-title { font-size: 20px; }
+        .pk-card-body { padding: 16px; }
+        .pk-nav-tag { display: none; }
+        .dev-terminal { height: 160px; }
+    }
 </style>
 
-<div class="dev-container">
-    <div class="dev-header">
-        <div>
-            <h1 style="margin:0;">SYSTEM DEV CONSOLE</h1>
-            <p style="margin:5px 0 0; opacity:0.6; font-size:13px;">GPIO Hardware Simulation & Log Testing</p>
+<!-- ── Topbar ── -->
+<div class="pk-topbar">
+    <a class="pk-brand" asp-action="Index">
+        <div class="pk-logo">
+            <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
         </div>
-        <a asp-action="Index" style="color:var(--dev-text); text-decoration:none; font-size:12px; border:1px solid var(--dev-border); padding:8px 15px; border-radius:5px;">← Back to Admin</a>
-    </div>
-
-    <div class="pin-grid">
-        @foreach (var pin in monitorPins)
-        {
-            var state = Model.FirstOrDefault(s => s.GpioPin == pin);
-            <div class="pin-card">
-                <div class="pin-info">
-                    <div class="pin-name">@(state?.StateName ?? "Unknown Zone")</div>
-                    <div class="pin-number">GPIO PIN @pin</div>
-                </div>
-                <div class="btn-group">
-                    <button class="dev-btn btn-in" onclick="triggerPin(@pin, true)">🚗 CAR IN</button>
-                    <button class="dev-btn btn-out" onclick="triggerPin(@pin, false)">💨 CAR OUT</button>
-                </div>
-            </div>
-        }
-    </div>
-
-    <div class="status-terminal" id="terminal">
-        <div class="log-entry">> System ready for testing...</div>
+        Parking Management System
+    </a>
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span class="pk-nav-tag">Dev Console</span>
+        <div class="pk-avatar">DEV</div>
     </div>
 </div>
 
+<!-- ── Hero ── -->
+<div class="pk-hero">
+    <div class="pk-hero-inner">
+        <div>
+            <div class="pk-crumb">
+                Admin
+                <svg viewBox="0 0 12 12"><path d="M4.5 3l3 3-3 3"/></svg>
+                Developer Console
+            </div>
+            <div class="pk-hero-title">Developer Console</div>
+            <div class="pk-hero-sub">GPIO Hardware Simulation, Live Monitor &amp; Log Testing</div>
+        </div>
+        <div class="pk-dev-badge">
+            <div class="pk-dev-dot"></div>
+            Dev Mode
+        </div>
+    </div>
+</div>
+
+<!-- ── Content ── -->
+<div class="pk-content">
+
+    <!-- Card 01: GPIO Hardware Simulation -->
+    <div class="pk-card">
+        <div class="pk-card-head">
+            <div class="pk-card-head-left">
+                <div class="pk-card-accent green"></div>
+                <div class="pk-card-num">01</div>
+                <span class="pk-card-title">GPIO Hardware Simulation</span>
+            </div>
+            <span class="pk-card-meta">@monitorPins.Length zones · manual trigger</span>
+        </div>
+        <div class="pk-card-body">
+            <div class="pin-grid">
+                @foreach (var pin in monitorPins)
+                {
+                    var state = Model.FirstOrDefault(s => s.GpioPin == pin);
+                    <div class="pin-card">
+                        <div class="pin-info">
+                            <div class="pin-name">@(state?.StateName ?? "Unknown Zone")</div>
+                            <div class="pin-number">PIN @pin</div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="dev-btn btn-in" onclick="triggerPin(@pin, true)">🚗 CAR IN</button>
+                            <button class="dev-btn btn-out" onclick="triggerPin(@pin, false)">💨 CAR OUT</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="pk-two-col">
+
+        <!-- Card 02: GPIO Live Monitor -->
+        <div class="pk-card">
+            <div class="pk-card-head">
+                <div class="pk-card-head-left">
+                    <div class="pk-card-accent green"></div>
+                    <div class="pk-card-num">02</div>
+                    <span class="pk-card-title">GPIO Live Monitor</span>
+                </div>
+                <span id="connection-status" class="pk-conn-badge off">Disconnected</span>
+            </div>
+            <div class="pk-card-body">
+                <div class="pk-gpio-monitor-grid">
+                    @foreach (var pin in monitorPins)
+                    {
+                        <div id="dev-pin-@pin" class="gpio-monitor-item">
+                            <div class="gpio-led"></div>
+                            <span class="gpio-label">PIN @pin</span>
+                        </div>
+                    }
+                </div>
+                <div class="pk-legend">
+                    <div class="pk-legend-item">
+                        <div style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.4);"></div>
+                        Active
+                    </div>
+                    <div class="pk-legend-item">
+                        <div style="width:10px;height:10px;border-radius:50%;background:#cbd5e1;"></div>
+                        Inactive
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 03: Activity Terminal -->
+        <div class="pk-card">
+            <div class="pk-card-head">
+                <div class="pk-card-head-left">
+                    <div class="pk-card-accent amber"></div>
+                    <div class="pk-card-num">03</div>
+                    <span class="pk-card-title">Activity Terminal</span>
+                </div>
+                <span class="pk-card-meta">Trigger log</span>
+            </div>
+            <div class="pk-card-body">
+                <div class="dev-terminal" id="terminal">
+                    <div class="log-entry boot"><span class="ts">[BOOT]</span> System ready for testing...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="pk-footer-bar">
+        <div class="pk-footer-meta">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Session started &middot; @DateTime.Now.ToString("dd MMM yyyy, HH:mm")
+        </div>
+        <a asp-action="Index" class="btn-pk-secondary">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to Admin Panel
+        </a>
+    </div>
+
+</div>
+
+<script src="~/js/signalr.min.js"></script>
 <script>
+    // ── GPIO Simulation ──
     async function triggerPin(pin, isActive) {
         const terminal = document.getElementById('terminal');
         const time = new Date().toLocaleTimeString();
@@ -87,11 +308,38 @@
             if (response.ok) {
                 const log = document.createElement('div');
                 log.className = 'log-entry';
-                log.innerHTML = `> [${time}] PIN ${pin} triggered ${action} | Syncing with Kiosk...`;
+                log.innerHTML = `<span class="ts">[${time}]</span> PIN ${pin} triggered ${action} | Syncing with Kiosk...`;
                 terminal.prepend(log);
             }
         } catch (err) {
             console.error("Trigger failed", err);
         }
     }
+
+    // ── GPIO Live Monitor (SignalR) ──
+    const statusBadge = document.getElementById('connection-status');
+
+    const devConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/parkingHub")
+        .withAutomaticReconnect()
+        .build();
+
+    devConnection.on("ReceiveStatus", (imagePath, hasCar, activePin) => {
+        document.querySelectorAll('.gpio-monitor-item').forEach(el => el.classList.remove('active'));
+        if (hasCar && activePin !== -1) {
+            document.getElementById('dev-pin-' + activePin)?.classList.add('active');
+        }
+    });
+
+    async function startDevSignalR() {
+        try {
+            await devConnection.start();
+            statusBadge.textContent = 'Live';
+            statusBadge.className = 'pk-conn-badge live';
+        } catch {
+            setTimeout(startDevSignalR, 2000);
+        }
+    }
+
+    startDevSignalR();
 </script>
