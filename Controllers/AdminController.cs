@@ -19,6 +19,7 @@ public class AdminController : Controller
         _db = db;
         _env = env;
         _logger = logger;
+        _hubContext = hubContext;
     }
 
     // 1. หน้าหลัก Admin + ระบบคำนวณพื้นที่ Disk (SD Card)
@@ -123,10 +124,11 @@ public class AdminController : Controller
     }
     // เพิ่มฟังก์ชันสำหรับบันทึกค่าการหมุน (ถ้าต้องการเก็บลง DB)
     [HttpPost]
-    public IActionResult SaveRotation(int degree)
+    public async Task<IActionResult> SaveRotation(int degree)
     {
-        // ในที่นี้เราจะใช้ Client-side storage (LocalStorage) เป็นหลัก 
-        // เพราะมันจำค่าแยกตาม Browser ได้ดี
+        // ยิง SignalR ไปหาทุกเครื่อง (รวมถึง Kiosk) ให้หมุนตามองศาที่ส่งมา
+        await _hubContext.Clients.All.SendAsync("RotateScreen", degree);
+        
         return Ok(new { degree = degree });
     }
     
@@ -194,5 +196,36 @@ public class AdminController : Controller
             return RedirectToAction("ViewLogs");
         }
     }
-   
+
+    // 1. หน้า Dev Console
+    public IActionResult Dev()
+    {
+        var states = _db.ParkingStates.ToList();
+        return View(states);
+    }
+
+    // 2. ระบบสั่งงาน GPIO จริง (Manual Trigger)
+    [HttpPost]
+    public async Task<IActionResult> ManualTrigger(int pin, bool isActive)
+    {
+        try
+        {
+            // 🚀 สั่งบันทึก Log
+            string status = isActive ? "รถเข้าจอด (Manual)" : "รถออก (Manual)";
+            _logger.SaveLog(pin, status);
+
+            // 🚀 ดึงข้อมูลภาพจาก DB
+            var state = _db.ParkingStates.FirstOrDefault(s => s.GpioPin == pin);
+            string imagePath = state?.ImagePath ?? "";
+
+            // 🚀 ส่ง SignalR บังคับหน้า Kiosk ให้เปลี่ยนภาพทันที
+            await _hubContext.Clients.All.SendAsync("ReceiveStatus", imagePath, isActive, pin);
+
+            return Ok(new { success = true, pin = pin, state = isActive });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
 }

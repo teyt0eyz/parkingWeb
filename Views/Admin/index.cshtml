@@ -669,12 +669,21 @@
     }
 
     function applyKioskRotation() {
+        // 1. บันทึกไว้ในเครื่องตัวเองก่อน
         localStorage.setItem('screenRotation', currentDeg);
-        const btn  = document.querySelector('.pk-apply-btn');
-        const orig = btn.innerHTML;
-        btn.style.background = '#22c55e';
-        btn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Saved!';
-        setTimeout(() => { btn.style.background = ''; btn.innerHTML = orig; }, 2000);
+        
+        // 2. 🚀 ส่งคำสั่งไปที่ Server เพื่อให้ Server บอก Kiosk ให้หมุน (สำคัญมาก!)
+        fetch(`/Admin/SaveRotation?degree=${currentDeg}`, { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    // แสดง UI ว่าบันทึกสำเร็จ
+                    const btn  = document.querySelector('.pk-apply-btn');
+                    const orig = btn.innerHTML;
+                    btn.style.background = '#22c55e';
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Saved & Broadcasted!';
+                    setTimeout(() => { btn.style.background = ''; btn.innerHTML = orig; }, 2000);
+                }
+            });
     }
 
     // Restore saved rotation on load

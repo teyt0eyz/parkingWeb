@@ -1,0 +1,97 @@
+@model IEnumerable<ParkingWeb.Models.ParkingState>
+@{
+    ViewData["Title"] = "Developer Console";
+    int[] monitorPins = { 17, 27, 22, 23, 24 };
+}
+
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --dev-bg: #0f172a;
+        --dev-card: #1e293b;
+        --dev-border: #334155;
+        --dev-green: #22c55e;
+        --dev-red: #ef4444;
+        --dev-text: #f1f5f9;
+    }
+
+    body { background: var(--dev-bg); color: var(--dev-text); font-family: 'JetBrains Mono', monospace; }
+    
+    .dev-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+    .dev-header { border-bottom: 2px solid var(--dev-border); padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .pin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .pin-card { background: var(--dev-card); border: 1px solid var(--dev-border); border-radius: 12px; padding: 20px; transition: all 0.2s; }
+    .pin-card:hover { border-color: var(--dev-green); box-shadow: 0 0 15px rgba(34, 197, 94, 0.2); }
+    
+    .pin-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .pin-name { font-weight: 600; font-size: 16px; color: var(--dev-green); }
+    .pin-number { opacity: 0.6; font-size: 12px; }
+
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .dev-btn { 
+        border: none; padding: 12px; border-radius: 6px; cursor: pointer; 
+        font-family: inherit; font-weight: 600; transition: opacity 0.2s; 
+    }
+    .btn-in { background: var(--dev-green); color: #052e16; }
+    .btn-out { background: var(--dev-red); color: #450a0a; }
+    .dev-btn:active { opacity: 0.7; transform: scale(0.98); }
+
+    .status-terminal { 
+        margin-top: 30px; background: #000; border: 1px solid var(--dev-border); 
+        padding: 15px; border-radius: 8px; font-size: 12px; height: 150px; overflow-y: auto;
+    }
+    .log-entry { margin-bottom: 5px; border-left: 2px solid var(--dev-green); padding-left: 10px; }
+</style>
+
+<div class="dev-container">
+    <div class="dev-header">
+        <div>
+            <h1 style="margin:0;">SYSTEM DEV CONSOLE</h1>
+            <p style="margin:5px 0 0; opacity:0.6; font-size:13px;">GPIO Hardware Simulation & Log Testing</p>
+        </div>
+        <a asp-action="Index" style="color:var(--dev-text); text-decoration:none; font-size:12px; border:1px solid var(--dev-border); padding:8px 15px; border-radius:5px;">← Back to Admin</a>
+    </div>
+
+    <div class="pin-grid">
+        @foreach (var pin in monitorPins)
+        {
+            var state = Model.FirstOrDefault(s => s.GpioPin == pin);
+            <div class="pin-card">
+                <div class="pin-info">
+                    <div class="pin-name">@(state?.StateName ?? "Unknown Zone")</div>
+                    <div class="pin-number">GPIO PIN @pin</div>
+                </div>
+                <div class="btn-group">
+                    <button class="dev-btn btn-in" onclick="triggerPin(@pin, true)">🚗 CAR IN</button>
+                    <button class="dev-btn btn-out" onclick="triggerPin(@pin, false)">💨 CAR OUT</button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="status-terminal" id="terminal">
+        <div class="log-entry">> System ready for testing...</div>
+    </div>
+</div>
+
+<script>
+    async function triggerPin(pin, isActive) {
+        const terminal = document.getElementById('terminal');
+        const time = new Date().toLocaleTimeString();
+        const action = isActive ? "IN" : "OUT";
+
+        try {
+            const response = await fetch(`/Admin/ManualTrigger?pin=${pin}&isActive=${isActive}`, { method: 'POST' });
+            if (response.ok) {
+                const log = document.createElement('div');
+                log.className = 'log-entry';
+                log.innerHTML = `> [${time}] PIN ${pin} triggered ${action} | Syncing with Kiosk...`;
+                terminal.prepend(log);
+            }
+        } catch (err) {
+            console.error("Trigger failed", err);
+        }
+    }
+</script>

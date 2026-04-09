@@ -45,6 +45,29 @@
             transform: translateZ(0); 
             will-change: transform, opacity;
         }
+        body.rotate-90 #display-container {
+        transform: rotate(90deg);
+        transform-origin: center;
+        width: 100vh;
+        height: 100vw;
+        margin-left: calc((100vw - 100vh) / 2);
+        margin-top: calc((100vh - 100vw) / 2);
+        }
+
+        /* หมุน 180 องศา (กลับหัว) */
+        body.rotate-180 #display-container { 
+            transform: rotate(180deg); 
+        }
+
+        /* หมุน 270 องศา (แนวตั้งอีกด้าน) */
+        body.rotate-270 #display-container {
+            transform: rotate(270deg);
+            transform-origin: center;
+            width: 100vh;
+            height: 100vw;
+            margin-left: calc((100vw - 100vh) / 2);
+            margin-top: calc((100vh - 100vw) / 2);
+        }
     </style>
 </head>
 <body>
@@ -61,50 +84,57 @@
     const idleVid = document.getElementById('idleVideo');
     const carImg = document.getElementById('guideImage');
 
-    // 1. ตั้งค่า SignalR ให้บังคับใช้ "WebSockets" เท่านั้น (เพื่อความเร็วสูงสุด)
+    // โหลดการหมุนหน้าจอที่เคยเซฟไว้
+    (function initRotation() {
+        const saved = localStorage.getItem('screenRotation') || '0';
+        if (saved !== '0') document.body.classList.add('rotate-' + saved);
+    })();
+
     const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/parkingHub", {
-            transport: signalR.HttpTransportType.WebSockets 
-        })
-        .withAutomaticReconnect([0, 500, 1000, 2000]) 
+        .withUrl("/parkingHub", { transport: signalR.HttpTransportType.WebSockets })
+        .withAutomaticReconnect()
         .build();
 
-    connection.on("ReceiveStatus", (imagePath, hasCar) => {
-        if (hasCar && imagePath !== "") {
+    // ✅ รับ 3 พารามิเตอร์ให้ตรงกับ Controller: imagePath, hasCar, activePin
+    connection.on("ReceiveStatus", (imagePath, hasCar, activePin) => {
+        console.log("🔔 SignalR Received:", { imagePath, hasCar, activePin });
+
+        if (hasCar === true && imagePath && imagePath !== "") {
             const targetUrl = '/uploads/' + imagePath;
+            console.log("📸 Changing image to:", targetUrl);
             
-            if (carImg.src.includes(imagePath)) {
-                // ถ้ารูปเดิมอยู่แล้ว ไม่ต้องทำอะไร
-                carImg.style.display = 'block';
-                idleVid.style.display = 'none';
-            } else {
-                carImg.src = targetUrl;
-                carImg.style.display = 'block';
-                idleVid.style.display = 'none';
-            }
+            carImg.src = targetUrl;
+            carImg.style.display = 'block';
+            idleVid.style.display = 'none';
+            idleVid.pause(); // หยุดวิดีโอประหยัดพลังงาน
         } else {
-            // ซ่อนรูปรถ และกลับมาโชว์วิดีโอ Idle
+            console.log("🎥 Returning to Idle Video");
             carImg.style.display = 'none';
             idleVid.style.display = 'block';
-            
-            // 🚀 สั่งเล่นวิดีโอซ้ำอีกรอบเผื่อเบราว์เซอร์หยุดมันตอนโดนซ่อน
-            idleVid.play().catch(e => console.log("Auto-play prevented: ", e));
+            idleVid.play().catch(e => console.warn("Video Play Error:", e));
         }
+    });
+
+    // ระบบหมุนหน้าจอแบบ Real-time
+    connection.on("RotateScreen", (degree) => {
+        console.log("🔄 Rotating Screen to:", degree);
+        document.body.classList.remove('rotate-0', 'rotate-90', 'rotate-180', 'rotate-270');
+        if (degree !== 0) document.body.classList.add('rotate-' + degree);
+        localStorage.setItem('screenRotation', degree);
     });
 
     async function startConnection() {
         try {
             await connection.start();
-            console.log("✅ Connected!");
+            console.log("✅ Connected to SignalR Hub!");
         } catch (err) {
-            // 3. ลดเวลา Retry เพื่อให้มันเกาะเซิร์ฟเวอร์ได้ไวที่สุดหลังจาก Pi บูตเสร็จ
-            setTimeout(startConnection, 500); 
+            console.error("❌ Connection failed, retrying...", err);
+            setTimeout(startConnection, 1000); 
         }
     }
 
     startConnection();
-    // ป้องกันการกดคลิกขวา (โหมด Kiosk)
-    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
 </body>
 </html>
