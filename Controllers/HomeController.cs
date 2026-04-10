@@ -20,6 +20,11 @@ public class HomeController : Controller
                      : new List<string?>();
         
         ViewBag.Images = images;
+
+        // เช็คว่ามีไฟล์วิดีโอ idle.mp4 อยู่หรือเปล่า
+        string videoPath = Path.Combine(_environment.WebRootPath, "videos", "idle.mp4");
+        ViewBag.HasVideo = System.IO.File.Exists(videoPath);
+
         return View();
     }
 
