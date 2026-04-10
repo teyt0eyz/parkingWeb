@@ -84,11 +84,8 @@
     const idleVid = document.getElementById('idleVideo');
     const carImg = document.getElementById('guideImage');
 
-    // Unmute เมื่อผู้ใช้แตะ/คลิกหน้าจอครั้งแรก (Kiosk touch to enable sound)
-    document.addEventListener('click', function unmuteOnce() {
-        idleVid.muted = false;
-        document.removeEventListener('click', unmuteOnce);
-    }, { once: true });
+    // เริ่ม muted เพื่อให้ autoplay ผ่าน แล้ว unmute ทันทีที่วิดีโอเล่นได้
+    idleVid.addEventListener('playing', () => { idleVid.muted = false; }, { once: true });
 
     // โหลดการหมุนหน้าจอที่เคยเซฟไว้
     (function initRotation() {
