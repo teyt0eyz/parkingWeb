@@ -208,6 +208,25 @@
     .btn-pk-log:hover { background: #DBEAFE; }
     .btn-pk-log svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
+    /* ── Mute Toggle ── */
+    .pk-btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 2px; }
+    .btn-pk-mute {
+        background: var(--green-lt); color: var(--green-tx);
+        border: 1.5px solid var(--green-bd);
+        padding: 10px 18px; border-radius: var(--radius-sm);
+        cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit;
+        display: inline-flex; align-items: center; gap: 6px;
+        transition: all .2s ease;
+        position: relative; overflow: hidden;
+    }
+    .btn-pk-mute:hover { filter: brightness(.95); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+    .btn-pk-mute svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all .2s; }
+    .btn-pk-mute.is-muted {
+        background: var(--red-lt); color: var(--red-tx);
+        border-color: var(--red-bd);
+    }
+    .btn-pk-mute .mute-label { transition: opacity .15s; }
+
     /* ── GPIO State Image rows ── */
     .pk-gpio-row { display: grid; grid-template-columns: 46px 1fr auto auto; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border-lt); }
     .pk-gpio-row:last-child { border-bottom: none; }
@@ -406,13 +425,23 @@
                         <div class="pk-fz-sub" id="videoFileName">Only .mp4 files are accepted</div>
                         <input type="file" name="videoFile" accept="video/mp4" required id="videoFileInput">
                     </label>
-                    <button type="submit" class="btn-pk-primary">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                        </svg>
-                        Save Video
-                    </button>
+                    <div class="pk-btn-row">
+                        <button type="submit" class="btn-pk-primary">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            Save Video
+                        </button>
+                        <button type="button" class="btn-pk-mute" id="muteToggleBtn" onclick="toggleKioskMute()">
+                            <svg id="muteIcon" viewBox="0 0 24 24">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                <path d="M19.07 4.93a10 10 0 010 14.14"/>
+                                <path d="M15.54 8.46a5 5 0 010 7.07"/>
+                            </svg>
+                            <span class="mute-label" id="muteLabelText">Sound On</span>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -569,6 +598,36 @@
 </div><!-- /pk-content -->
 
 <script>
+    // ── Mute Toggle ──
+    let kioskMuted = false;
+
+    function toggleKioskMute() {
+        kioskMuted = !kioskMuted;
+        updateMuteBtn(kioskMuted);
+        fetch(`/Admin/SetMute?muted=${kioskMuted}`, { method: 'POST' });
+    }
+
+    function updateMuteBtn(muted) {
+        const btn   = document.getElementById('muteToggleBtn');
+        const icon  = document.getElementById('muteIcon');
+        const label = document.getElementById('muteLabelText');
+        if (muted) {
+            btn.classList.add('is-muted');
+            label.textContent = 'Muted';
+            icon.innerHTML = `
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <line x1="23" y1="9" x2="17" y2="15"/>
+                <line x1="17" y1="9" x2="23" y2="15"/>`;
+        } else {
+            btn.classList.remove('is-muted');
+            label.textContent = 'Sound On';
+            icon.innerHTML = `
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M19.07 4.93a10 10 0 010 14.14"/>
+                <path d="M15.54 8.46a5 5 0 010 7.07"/>`;
+        }
+    }
+
     // ── Video upload ──
     document.getElementById('videoFileInput')?.addEventListener('change', function () {
         const label = document.getElementById('videoFileName');

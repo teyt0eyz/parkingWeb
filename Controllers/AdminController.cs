@@ -119,10 +119,15 @@ public class AdminController : Controller
     [HttpPost]
     public async Task<IActionResult> SaveRotation(int degree)
     {
-        // ยิง SignalR ไปหาทุกเครื่อง (รวมถึง Kiosk) ให้หมุนตามองศาที่ส่งมา
         await _hubContext.Clients.All.SendAsync("RotateScreen", degree);
-        
         return Ok(new { degree = degree });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SetMute(bool muted)
+    {
+        await _hubContext.Clients.All.SendAsync("SetMute", muted);
+        return Ok(new { muted = muted });
     }
     
     // 5. ระบบดูรายการ Log ย้อนหลัง (เก็บส่วนคำนวณพื้นที่ไว้ครบถ้วน)

@@ -121,6 +121,11 @@
         }
     });
 
+    // รับคำสั่ง Mute/Unmute จาก Admin
+    connection.on("SetMute", (muted) => {
+        idleVid.muted = muted;
+    });
+
     // ระบบหมุนหน้าจอแบบ Real-time
     connection.on("RotateScreen", (degree) => {
         console.log("🔄 Rotating Screen to:", degree);
