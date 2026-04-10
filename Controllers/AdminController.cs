@@ -57,18 +57,11 @@ public class AdminController : Controller
     {
         if (videoFile != null && videoFile.Length > 0)
         {
-            string fileName = "idle_" + Guid.NewGuid().ToString().Substring(0, 8) + Path.GetExtension(videoFile.FileName);
             string uploadDir = Path.Combine(_env.WebRootPath, "videos");
             if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
 
-            // ลบไฟล์เก่าทิ้งก่อนเพื่อประหยัดที่
-            var oldFiles = Directory.GetFiles(uploadDir, "idle_*");
-            foreach (var oldFile in oldFiles)
-            {
-                try { System.IO.File.Delete(oldFile); } catch { }
-            }
-
-            string path = Path.Combine(uploadDir, fileName);
+            // บันทึกเป็น idle.mp4 เสมอ เพื่อให้ Home/index โหลดได้ทันที
+            string path = Path.Combine(uploadDir, "idle.mp4");
             using (var stream = new FileStream(path, FileMode.Create))
             {
                 await videoFile.CopyToAsync(stream);
