@@ -87,64 +87,38 @@
     /* ── Content ── */
     .pk-content { max-width: 1180px; margin: 0 auto; padding: 24px 32px 56px; display: flex; flex-direction: column; gap: 18px; }
 
-    /* ── Storage bar (horizontal) ── */
-    .pk-storage-bar-card {
-        background: var(--white);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: 18px 22px;
-        transition: all .2s ease;
-        position: relative;
-        overflow: hidden;
+    /* ── Storage Card (multi-bar) ── */
+    .pk-storage-card {
+        background: var(--white); border: 1px solid var(--border);
+        border-radius: var(--radius-lg); padding: 22px 26px;
+        display: flex; flex-direction: column; gap: 18px;
     }
-    .pk-storage-bar-card::before {
-        content:''; position:absolute; top:0; left:0; right:0; height:3px;
-        background:var(--blue); opacity:0; transition:opacity .2s;
-        border-radius: 14px 14px 0 0;
-    }
-    .pk-storage-bar-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.06); transform: translateY(-1px); }
-    .pk-storage-bar-card:hover::before { opacity:1; }
-
-    .pk-sb-head {
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
-    }
-    .pk-sb-head-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-    .pk-sb-icon {
-        width: 36px; height: 36px; border-radius: 10px;
-        background: var(--blue-lt); border: 1px solid var(--blue-bd);
-        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .pk-sb-icon svg { width: 16px; height: 16px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .pk-sb-label { font-size: 12px; color: var(--ink-4); font-weight: 500; line-height: 1.2; }
-    .pk-sb-title { font-size: 14px; font-weight: 700; color: var(--ink); letter-spacing: -.2px; margin-top: 2px; }
-    .pk-sb-pct {
-        font-size: 13px; font-weight: 700;
-        font-family: 'JetBrains Mono', monospace;
-        padding: 5px 11px; border-radius: 7px;
-        background: var(--border-lt); border: 1px solid var(--border);
-    }
-    .pk-sb-track {
-        position: relative; width: 100%; height: 12px;
-        background: var(--border-lt); border-radius: 100px;
-        overflow: hidden; border: 1px solid var(--border);
-    }
-    .pk-sb-fill {
-        height: 100%; border-radius: 100px;
-        transition: width .8s cubic-bezier(.4,0,.2,1);
-        position: relative;
-        background-image: linear-gradient(90deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,.18) 100%);
-    }
-    .pk-sb-foot {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-top: 10px; gap: 12px; flex-wrap: wrap;
-    }
-    .pk-sb-meta { font-size: 12px; color: var(--ink-3); font-weight: 500; }
-    .pk-sb-meta strong { color: var(--ink); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-    .pk-sb-free { font-size: 12px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
-    .pk-sb-free strong { color: var(--ink-2); font-weight: 700; }
-
-    .pk-warn-badge { display: inline-flex; align-items: center; gap: 4px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 600; margin-top: 5px; }
+    .pk-storage-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .pk-storage-title-row { display: flex; align-items: center; gap: 10px; }
+    .pk-storage-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--blue-lt); border: 1px solid var(--blue-bd); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pk-storage-icon svg { width: 18px; height: 18px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-storage-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+    .pk-storage-sub   { font-size: 11px; color: var(--ink-4); margin-top: 2px; }
+    .pk-pct-badge { font-size: 22px; font-weight: 700; color: var(--ink); font-family: 'JetBrains Mono', monospace; letter-spacing: -1px; }
+    .pk-pct-badge span { font-size: 13px; font-weight: 500; color: var(--ink-3); margin-left: 2px; }
+    .pk-bars { display: flex; flex-direction: column; gap: 14px; }
+    .pk-bar-row { display: flex; flex-direction: column; gap: 6px; }
+    .pk-bar-label-row { display: flex; justify-content: space-between; align-items: center; }
+    .pk-bar-label { font-size: 12px; font-weight: 500; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+    .pk-bar-label::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 3px; }
+    .pk-bar-label.drive::before { background: var(--blue); }
+    .pk-bar-label.logs::before  { background: #8B5CF6; }
+    .pk-bar-val { font-size: 11px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; }
+    .pk-bar-track { height: 10px; background: var(--border-lt); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
+    .pk-bar-fill { height: 100%; border-radius: 99px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+    .pk-bar-fill.drive { background: linear-gradient(90deg, #3b82f6, #2563EB); }
+    .pk-bar-fill.logs  { background: linear-gradient(90deg, #a78bfa, #7C3AED); }
+    .pk-stat-chips { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid var(--border-lt); }
+    .pk-chip { display: flex; flex-direction: column; gap: 2px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 14px; flex: 1; min-width: 80px; }
+    .pk-chip-label { font-size: 10px; color: var(--ink-4); text-transform: uppercase; letter-spacing: .5px; }
+    .pk-chip-value { font-size: 15px; font-weight: 700; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+    .pk-chip-unit  { font-size: 10px; color: var(--ink-4); font-weight: 400; }
+    .pk-warn-badge { display: inline-flex; align-items: center; gap: 4px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 600; }
 
     /* ── Two-col ── */
     .pk-two-col {
@@ -351,43 +325,67 @@
 <!-- ── Content ── -->
 <div class="pk-content">
 
-    <div class="pk-storage-bar-card">
-        <div class="pk-sb-head">
-            <div class="pk-sb-head-left">
-                <div class="pk-sb-icon">
-                    <svg viewBox="0 0 24 24">
-                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                        <path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
-                        <path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/>
-                    </svg>
+    @{
+        double logPct    = double.Parse(ViewBag.LogUsedPct.ToString());
+        double driveBarW = Math.Min(usedPct, 100);
+        double logBarW   = Math.Min(logPct, 100);
+    }
+    <div class="pk-storage-card">
+        <div class="pk-storage-header">
+            <div class="pk-storage-title-row">
+                <div class="pk-storage-icon">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
                 </div>
                 <div>
-                    <div class="pk-sb-label">Storage</div>
-                    <div class="pk-sb-title">Disk Storage (SD Card)</div>
+                    <div class="pk-storage-title">Storage Overview</div>
+                    <div class="pk-storage-sub">SD Card · Log Files</div>
                 </div>
             </div>
-            <div class="pk-sb-pct" style="color:@ringColor;border-color:@ringColor;background:@(ringColor)15;">
-                @ViewBag.UsedPercent%
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div class="pk-pct-badge" style="color:@ringColor;">@ViewBag.UsedPercent<span>% used</span></div>
+                @if (freeGB < 1.0) { <div class="pk-warn-badge">⚠️ พื้นที่ใกล้เต็ม!</div> }
             </div>
         </div>
 
-        <div class="pk-sb-track">
-            <div class="pk-sb-fill"
-                style="width:@(usedPct.ToString("F1"))%;background-color:@ringColor;"></div>
+        <div class="pk-bars">
+            <div class="pk-bar-row">
+                <div class="pk-bar-label-row">
+                    <span class="pk-bar-label drive">SD Card Used</span>
+                    <span class="pk-bar-val">@usedGB.ToString("F1") GB / @totalGB GB</span>
+                </div>
+                <div class="pk-bar-track">
+                    <div class="pk-bar-fill drive" style="width:@(driveBarW.ToString("F1"))%; background:linear-gradient(90deg,@ringColor,@ringColor);"></div>
+                </div>
+            </div>
+            <div class="pk-bar-row">
+                <div class="pk-bar-label-row">
+                    <span class="pk-bar-label logs">Log Files</span>
+                    <span class="pk-bar-val">@ViewBag.TotalLogSize MB &nbsp;·&nbsp; @ViewBag.LogUsedPct% of drive</span>
+                </div>
+                <div class="pk-bar-track">
+                    <div class="pk-bar-fill logs" style="width:@(logBarW.ToString("F2"))%;"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="pk-sb-foot">
-            <div class="pk-sb-meta">
-                Used <strong>@usedGB.ToString("F1") GB</strong> of <strong>@totalGB GB</strong>
+        <div class="pk-stat-chips">
+            <div class="pk-chip">
+                <span class="pk-chip-label">Total Drive</span>
+                <span class="pk-chip-value">@totalGB <span class="pk-chip-unit">GB</span></span>
             </div>
-            <div class="pk-sb-free">
-                Free: <strong>@ViewBag.FreeSpace GB</strong>
+            <div class="pk-chip">
+                <span class="pk-chip-label">Used</span>
+                <span class="pk-chip-value">@usedGB.ToString("F1") <span class="pk-chip-unit">GB</span></span>
+            </div>
+            <div class="pk-chip">
+                <span class="pk-chip-label">Free</span>
+                <span class="pk-chip-value">@ViewBag.FreeSpace <span class="pk-chip-unit">GB</span></span>
+            </div>
+            <div class="pk-chip">
+                <span class="pk-chip-label">Log Size</span>
+                <span class="pk-chip-value">@ViewBag.TotalLogSize <span class="pk-chip-unit">MB</span></span>
             </div>
         </div>
-
-        @if (freeGB < 1.0) {
-            <div class="pk-warn-badge" style="margin-top:10px;">⚠️ พื้นที่ใกล้เต็ม!</div>
-        }
     </div>
 
     <div class="pk-two-col">

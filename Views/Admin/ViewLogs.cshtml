@@ -163,6 +163,14 @@
         margin-top: 3px;
     }
 
+    .pk-log-size-pill {
+        display: flex; align-items: center; gap: 6px;
+        background: #F5F3FF; border: 0.5px solid #DDD6FE;
+        border-radius: 20px; padding: 7px 14px;
+        font-size: 12px; color: #5B21B6; font-weight: 600; white-space: nowrap;
+    }
+    .pk-log-size-pill svg { width: 12px; height: 12px; stroke: #7C3AED; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
     .pk-status-pill {
         display: flex;
         align-items: center;
@@ -460,29 +468,6 @@
         stroke-linecap: round;
         stroke-linejoin: round;
     }
-    /* เพิ่ม CSS สำหรับ Storage Card */
-    .pk-summary-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-    .pk-summary-item {
-        background: var(--white);
-        border: 0.5px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: 16px 20px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    .pk-summary-icon {
-        width: 40px; height: 40px; border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-    }
-    .pk-summary-label { font-size: 11px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.5px; }
-    .pk-summary-value { font-size: 18px; font-weight: 600; color: var(--ink); }
-    .pk-summary-value span { font-size: 12px; color: var(--ink-3); margin-left: 4px; }
     /* ── Responsive ── */
     @@media (max-width: 640px) {
         .pk-hero, .pk-content { padding-left: 16px; padding-right: 16px; }
@@ -523,35 +508,21 @@
             <div class="pk-hero-title">Log History</div>
             <div class="pk-hero-sub">ประวัติการจอดรถย้อนหลัง 90 วัน — เลือกวันที่เพื่อดูรายงาน CSV</div>
         </div>
-        <div class="pk-status-pill">
-            <div class="pk-dot"></div>
-            @Model.Count รายการพบ
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="pk-status-pill">
+                <div class="pk-dot"></div>
+                @Model.Count รายการพบ
+            </div>
+            <div class="pk-log-size-pill">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                @ViewBag.TotalLogSize MB
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Content -->
 <div class="pk-content">
-    <div class="pk-summary-grid">
-        <div class="pk-summary-item">
-            <div class="pk-summary-icon" style="background: var(--blue-lt); color: var(--blue);">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            </div>
-            <div>
-                <div class="pk-summary-label">Total Logs Used</div>
-                <div class="pk-summary-value">@ViewBag.TotalLogSizeMB <span>MB</span></div>
-            </div>
-        </div>
-        <div class="pk-summary-item">
-            <div class="pk-summary-icon" style="background: var(--green-lt); color: var(--green-tx);">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-            </div>
-            <div>
-                <div class="pk-summary-label">SD Card Capacity</div>
-                <div class="pk-summary-value">@ViewBag.TotalDriveSize <span>GB</span></div>
-            </div>
-        </div>
-    </div>
     <!-- Card 03 — Log List -->
     <div class="pk-card">
         <div class="pk-card-head">

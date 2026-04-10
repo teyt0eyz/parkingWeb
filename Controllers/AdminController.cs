@@ -47,6 +47,30 @@ public class AdminController : Controller
             ViewBag.UsedPercent = "0";
         }
 
+        // คำนวณขนาด Log files
+        try
+        {
+            string logFolder = Path.Combine(_env.ContentRootPath, "ParkingLogs");
+            if (!Directory.Exists(logFolder)) Directory.CreateDirectory(logFolder);
+            var logFiles = Directory.GetFiles(logFolder, "*.csv");
+            long totalLogBytes = logFiles.Select(f => new FileInfo(f).Length).Sum();
+            double totalLogMB = totalLogBytes / (1024.0 * 1024.0);
+
+            double totalDriveGB = double.Parse(ViewBag.TotalSpace.ToString());
+            double usedDriveGB  = totalDriveGB - double.Parse(ViewBag.FreeSpace.ToString());
+            double logPct = totalDriveGB > 0 ? (totalLogMB / (totalDriveGB * 1024.0)) * 100.0 : 0;
+
+            ViewBag.TotalLogSize = totalLogMB.ToString("F2");
+            ViewBag.UsedDriveGB  = usedDriveGB.ToString("F1");
+            ViewBag.LogUsedPct   = logPct.ToString("F2");
+        }
+        catch
+        {
+            ViewBag.TotalLogSize = "0.00";
+            ViewBag.UsedDriveGB  = "0.0";
+            ViewBag.LogUsedPct   = "0.00";
+        }
+
         var states = _db.ParkingStates.ToList();
         return View(states);
     }
@@ -138,14 +162,25 @@ public class AdminController : Controller
 
         var files = Directory.GetFiles(logFolder, "*.csv");
         
-        // 1. คำนวณพื้นที่ Log รวม (ของเดิม Toey)
+        // 1. คำนวณพื้นที่ Log รวม
         long totalLogBytes = files.Select(f => new FileInfo(f).Length).Sum();
-        ViewBag.TotalLogSize = (totalLogBytes / (1024.0 * 1024.0)).ToString("F2") + " MB";
+        double totalLogMB = totalLogBytes / (1024.0 * 1024.0);
+        ViewBag.TotalLogSize = totalLogMB.ToString("F2");
 
-        // 2. คำนวณพื้นที่ SD Card ทั้งหมด (ของเดิม Toey)
+        // 2. คำนวณพื้นที่ SD Card ทั้งหมด
         string drivePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "/" : "C";
         var drive = new DriveInfo(drivePath);
-        ViewBag.TotalDriveSize = (drive.TotalSize / (1024.0 * 1024.0 * 1024.0)).ToString("F2") + " GB";
+        double totalDriveGB = drive.TotalSize / (1024.0 * 1024.0 * 1024.0);
+        double freeSpaceGB  = drive.AvailableFreeSpace / (1024.0 * 1024.0 * 1024.0);
+        double usedSpaceGB  = totalDriveGB - freeSpaceGB;
+        double driveUsedPct = totalDriveGB > 0 ? (usedSpaceGB / totalDriveGB) * 100.0 : 0;
+        double logPct       = totalDriveGB > 0 ? (totalLogMB / (totalDriveGB * 1024.0)) * 100.0 : 0;
+
+        ViewBag.TotalDriveGB  = totalDriveGB.ToString("F1");
+        ViewBag.UsedDriveGB   = usedSpaceGB.ToString("F1");
+        ViewBag.FreeSpaceGB   = freeSpaceGB.ToString("F1");
+        ViewBag.DriveUsedPct  = driveUsedPct.ToString("F1");
+        ViewBag.LogUsedPct    = logPct.ToString("F2");
 
         // 3. ส่ง Model เป็น "ชื่อไฟล์|ขนาดไบต์"
         var logs = files.Select(f => $"{Path.GetFileName(f)}|{new FileInfo(f).Length}")
