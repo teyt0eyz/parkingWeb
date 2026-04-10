@@ -271,9 +271,33 @@
         .pk-storage-card { padding: 14px; gap: 12px; }
         .pk-hero-title { font-size: 20px; }
         .pk-card-body { padding: 16px; }
-        .pk-gpio-row { grid-template-columns: 40px 1fr; gap: 10px; }
+
+        /* GPIO rows: stack cleanly */
+        .pk-gpio-row { grid-template-columns: 44px 1fr; gap: 10px; }
         .pk-gpio-actions { grid-column: 1 / -1; }
+        .pk-gpio-actions form { width: 100%; flex-wrap: nowrap; }
+        .pk-file-wrap { flex: 1; min-width: 0; }
+        .pk-file-btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 44px; display: flex; align-items: center; }
         .pk-gpio-row > form:last-child { grid-column: 1 / -1; text-align: right; }
+        .btn-pk-sm { min-height: 44px; padding: 10px 14px; }
+        .btn-pk-danger { min-height: 44px; padding: 10px 14px; }
+
+        /* Upload zone: hide drag text on mobile, show tap text */
+        .pk-fz-label .pk-fz-drag { display: none; }
+        .pk-file-zone { padding: 18px 12px; }
+
+        /* Buttons row: stack on very small screens */
+        .pk-btn-row { flex-wrap: wrap; }
+        .btn-pk-mute, .pk-btn-row .btn-pk-primary { flex: 1; justify-content: center; min-height: 48px; }
+
+        /* Prevent iOS font zoom on inputs */
+        .pk-search-input,
+        input[type="file"],
+        select { font-size: 16px !important; }
+
+        /* Rotation buttons: bigger tap area */
+        .pk-rot-btn { padding: 14px 10px; }
+
         .pk-screen-frame { width: 72px; height: 46px; }
         .pk-screen-stage { padding: 16px 20px; }
         .pk-kiosk-layout { gap: 14px; }
@@ -281,6 +305,7 @@
     }
     @@media (max-width: 420px) {
         .pk-nav-tag { display: none; }
+        .pk-hero-sub { font-size: 12px; }
     }
 
     /* Kiosk helpers */
@@ -419,7 +444,7 @@
                                 <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
                         </div>
-                        <div class="pk-fz-label">Drop file here, or <span>browse files</span></div>
+                        <div class="pk-fz-label"><span class="pk-fz-drag">Drop file here, or </span><span>browse files</span></div>
                         <div class="pk-fz-sub" id="videoFileName">Only .mp4 files are accepted</div>
                         <input type="file" name="videoFile" accept="video/mp4" required id="videoFileInput">
                     </label>

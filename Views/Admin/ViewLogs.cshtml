@@ -472,9 +472,29 @@
     @@media (max-width: 640px) {
         .pk-hero, .pk-content { padding-left: 16px; padding-right: 16px; }
         .pk-topbar { padding: 0 16px; }
-        .pk-log-item { grid-template-columns: 38px 1fr; }
+
+        /* Hero pills: stack under title */
+        .pk-hero-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+        .pk-hero-inner > div:last-child { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; }
+
+        /* Log rows: 2-col, badge hidden, button full width */
+        .pk-log-item { grid-template-columns: 38px 1fr; gap: 10px; }
         .pk-log-badge { display: none; }
-        .btn-pk-view { grid-column: 1 / -1; justify-self: start; }
+        .btn-pk-view { grid-column: 1 / -1; justify-self: start; min-height: 44px; align-items: center; }
+
+        /* Prevent iOS auto-zoom on search input */
+        .pk-search-input { font-size: 16px !important; }
+
+        /* Search bar: stack on small screens */
+        .pk-search-bar { flex-wrap: wrap; gap: 8px; }
+        .pk-search-wrap { max-width: 100%; }
+        .pk-result-count { margin-left: 0; }
+
+        .pk-hero-title { font-size: 20px; }
+    }
+    @@media (max-width: 420px) {
+        .pk-nav-tag { display: none; }
+        .pk-brand { font-size: 12px; }
     }
 </style>
 
