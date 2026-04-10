@@ -122,6 +122,11 @@
         }
     });
 
+    // รับคำสั่งให้ reload หน้าใหม่เมื่อ upload วิดีโอใหม่
+    connection.on("ReloadPage", () => {
+        location.reload();
+    });
+
     // รับคำสั่ง Mute/Unmute จาก Admin
     connection.on("SetMute", (muted) => {
         idleVid.muted = muted;

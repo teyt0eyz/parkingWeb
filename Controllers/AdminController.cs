@@ -94,6 +94,9 @@ public class AdminController : Controller
             {
                 await videoFile.CopyToAsync(stream);
             }
+
+            // แจ้ง Kiosk ให้ reload หน้าใหม่เพื่อโหลดวิดีโอล่าสุด
+            await _hubContext.Clients.All.SendAsync("ReloadPage");
         }
         return RedirectToAction("Index");
     }
