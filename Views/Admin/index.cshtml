@@ -599,6 +599,11 @@
     // ── Mute Toggle ──
     let kioskMuted = false;
 
+    // sync ปุ่มกับ state จาก server ตอนโหลดหน้า
+    fetch('/Admin/GetMuteState')
+        .then(r => r.json())
+        .then(data => { kioskMuted = data.muted; updateMuteBtn(data.muted); });
+
     function toggleKioskMute() {
         kioskMuted = !kioskMuted;
         updateMuteBtn(kioskMuted);

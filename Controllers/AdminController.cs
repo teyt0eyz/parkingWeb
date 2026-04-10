@@ -14,6 +14,10 @@ public class AdminController : Controller
     private readonly IWebHostEnvironment _env;
     private readonly LogService _logger;
     private readonly IHubContext<ParkingHub> _hubContext;
+
+    // เก็บ mute state ไว้บน server ให้ทุกหน้าดึงได้
+    private static bool _kioskMuted = false;
+
     public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger,IHubContext<ParkingHub> hubContext)
     {
         _db = db;
@@ -150,8 +154,15 @@ public class AdminController : Controller
     [HttpPost]
     public async Task<IActionResult> SetMute(bool muted)
     {
+        _kioskMuted = muted;
         await _hubContext.Clients.All.SendAsync("SetMute", muted);
         return Ok(new { muted = muted });
+    }
+
+    [HttpGet]
+    public IActionResult GetMuteState()
+    {
+        return Ok(new { muted = _kioskMuted });
     }
     
     // 5. ระบบดูรายการ Log ย้อนหลัง (เก็บส่วนคำนวณพื้นที่ไว้ครบถ้วน)

@@ -84,8 +84,12 @@
     const idleVid = document.getElementById('idleVideo');
     const carImg = document.getElementById('guideImage');
 
-    // เริ่ม muted เพื่อให้ autoplay ผ่าน แล้ว unmute ทันทีที่วิดีโอเล่นได้
-    idleVid.addEventListener('playing', () => { idleVid.muted = false; }, { once: true });
+    // เริ่ม muted เพื่อให้ autoplay ผ่าน แล้วเช็ค state จาก server ก่อน unmute
+    idleVid.addEventListener('playing', () => {
+        fetch('/Admin/GetMuteState')
+            .then(r => r.json())
+            .then(data => { idleVid.muted = data.muted; });
+    }, { once: true });
 
     // โหลดการหมุนหน้าจอที่เคยเซฟไว้
     (function initRotation() {
