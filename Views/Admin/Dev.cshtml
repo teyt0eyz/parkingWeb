@@ -88,7 +88,7 @@
     .pk-card-body { padding: 20px; }
 
     /* ── Pin Grid (GPIO Simulation) ── */
-    .pin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+    .pin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
     .pin-card {
         background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-md);
         padding: 16px; transition: all .2s ease;
@@ -97,6 +97,7 @@
     .pin-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
     .pin-name { font-weight: 700; font-size: 13px; color: var(--ink); line-height: 1.4; }
     .pin-number { font-size: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--blue); background: var(--blue-lt); border: 1px solid var(--blue-bd); border-radius: 5px; padding: 2px 7px; white-space: nowrap; flex-shrink: 0; }
+
     .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .dev-btn {
         border: none; padding: 9px 6px; border-radius: var(--radius-sm); cursor: pointer;
@@ -114,16 +115,16 @@
 
     /* ── GPIO Live Monitor ── */
     .pk-gpio-monitor-grid { display: flex; gap: 10px; flex-wrap: wrap; }
-    .gpio-monitor-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-md); min-width: 64px; transition: all .3s ease; }
+    .gpio-monitor-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-md); min-width: 72px; transition: all .3s ease; }
     .gpio-led { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; box-shadow: inset 0 1px 3px rgba(0,0,0,.1); transition: all .3s ease; }
     .gpio-label { font-size: 10px; font-weight: 600; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; }
-    .gpio-monitor-item.active { border-color: var(--green-bd); background: var(--green-lt); }
+.gpio-monitor-item.active { border-color: var(--green-bd); background: var(--green-lt); }
     .gpio-monitor-item.active .gpio-led { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,.5); }
     .gpio-monitor-item.active .gpio-label { color: var(--green-tx); }
     .pk-conn-badge { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; border-radius: 6px; padding: 4px 10px; }
     .pk-conn-badge.live { background: var(--green-lt); color: var(--green-tx); border: 1px solid var(--green-bd); }
     .pk-conn-badge.off  { background: var(--red-lt); color: var(--red); border: 1px solid var(--red-bd); }
-    .pk-legend { display: flex; gap: 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-lt); }
+    .pk-legend { display: flex; gap: 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-lt); flex-wrap: wrap; }
     .pk-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-3); font-weight: 500; }
 
     /* ── Activity Terminal ── */
@@ -145,6 +146,27 @@
     .btn-pk-secondary { font-size: 13px; font-weight: 600; color: var(--ink-2); background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 18px; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all .15s; }
     .btn-pk-secondary:hover { background: var(--border-lt); box-shadow: 0 2px 6px rgba(0,0,0,.06); }
     .btn-pk-secondary svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Raw GPIO Readings Table ── */
+    .raw-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+    .raw-table th { text-align: left; font-size: 10px; font-weight: 600; color: var(--ink-4); text-transform: uppercase; letter-spacing: .5px; padding: 0 12px 10px; border-bottom: 1px solid var(--border); }
+    .raw-table td { padding: 11px 12px; border-bottom: 1px solid var(--border-lt); vertical-align: middle; }
+    .raw-table tr:last-child td { border-bottom: none; }
+    .raw-table tr.row-warning td { background: #fff7ed; }
+
+    .raw-val { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; }
+    .raw-val .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .raw-val.is-high { color: #16a34a; }
+    .raw-val.is-high .dot { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.5); }
+    .raw-val.is-low  { color: #dc2626; }
+    .raw-val.is-low  .dot { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,.5); }
+
+    .raw-status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 3px 9px; }
+    .raw-status.triggering    { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .raw-status.not-trigger   { background: var(--border-lt); color: var(--ink-4); border: 1px solid var(--border); }
+    .raw-status.warn          { background: #fff7ed; color: #92400e; border: 1px solid #fcd34d; }
+
+    .raw-hint { font-size: 11px; color: #92400e; background: #fff7ed; border: 1px solid #fcd34d; border-radius: 6px; padding: 3px 9px; display: inline-block; }
 
     @@media (max-width: 900px) {
         .pk-two-col { grid-template-columns: 1fr; }
@@ -218,7 +240,7 @@
                             <div class="pin-number">PIN @pin</div>
                         </div>
                         <div class="btn-group">
-                            <button class="dev-btn btn-in" onclick="triggerPin(@pin, true)">🚗 CAR IN</button>
+                            <button class="dev-btn btn-in"  onclick="triggerPin(@pin, true)">🚗 CAR IN</button>
                             <button class="dev-btn btn-out" onclick="triggerPin(@pin, false)">💨 CAR OUT</button>
                         </div>
                     </div>
@@ -252,11 +274,11 @@
                 <div class="pk-legend">
                     <div class="pk-legend-item">
                         <div style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.4);"></div>
-                        Active
+                        Active (Car detected)
                     </div>
                     <div class="pk-legend-item">
                         <div style="width:10px;height:10px;border-radius:50%;background:#cbd5e1;"></div>
-                        Inactive
+                        Idle
                     </div>
                 </div>
             </div>
@@ -281,6 +303,49 @@
 
     </div>
 
+    <!-- Card 04: Raw GPIO Readings -->
+    <div class="pk-card">
+        <div class="pk-card-head">
+            <div class="pk-card-head-left">
+                <div class="pk-card-accent blue"></div>
+                <div class="pk-card-num">04</div>
+                <span class="pk-card-title">Raw GPIO Readings</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="pk-card-meta">Live · updates every ~1s</span>
+                <span id="raw-badge" class="pk-conn-badge off">Waiting...</span>
+            </div>
+        </div>
+        <div class="pk-card-body" style="padding:0;">
+            <table class="raw-table">
+                <thead>
+                    <tr>
+                        <th>PIN</th>
+                        <th>State Name</th>
+                        <th>Raw Value</th>
+                        <th>Idle Baseline</th>
+                        <th>Status</th>
+                        <th>Suggestion</th>
+                    </tr>
+                </thead>
+                <tbody id="raw-tbody">
+                    @foreach (var pin in monitorPins)
+                    {
+                        var s = Model.FirstOrDefault(x => x.GpioPin == pin);
+                        <tr id="raw-row-@pin">
+                            <td style="font-weight:700;color:var(--blue);">@pin</td>
+                            <td style="color:var(--ink-2);">@(s?.StateName ?? "—")</td>
+                            <td id="raw-val-@pin"><span class="raw-val" style="color:var(--ink-4);">— waiting</span></td>
+                            <td id="raw-idle-@pin"><span style="color:var(--ink-4);font-size:12px;">— waiting</span></td>
+                            <td id="raw-status-@pin"><span class="raw-status not-trigger">—</span></td>
+                            <td id="raw-hint-@pin"></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- ── Footer ── -->
     <div class="pk-footer-bar">
         <div class="pk-footer-meta">
@@ -301,14 +366,20 @@
     async function triggerPin(pin, isActive) {
         const terminal = document.getElementById('terminal');
         const time = new Date().toLocaleTimeString();
-        const action = isActive ? "IN" : "OUT";
+        const action = isActive ? "CAR IN" : "CAR OUT";
 
         try {
             const response = await fetch(`/Admin/ManualTrigger?pin=${pin}&isActive=${isActive}`, { method: 'POST' });
             if (response.ok) {
                 const log = document.createElement('div');
                 log.className = 'log-entry';
-                log.innerHTML = `<span class="ts">[${time}]</span> PIN ${pin} triggered ${action} | Syncing with Kiosk...`;
+                log.innerHTML = `<span class="ts">[${time}]</span> PIN ${pin} → ${action} | Syncing with Kiosk...`;
+                terminal.prepend(log);
+            } else {
+                const log = document.createElement('div');
+                log.className = 'log-entry';
+                log.style.borderLeftColor = '#ef4444';
+                log.innerHTML = `<span class="ts">[${time}]</span> ❌ PIN ${pin} trigger FAILED`;
                 terminal.prepend(log);
             }
         } catch (err) {
@@ -329,6 +400,51 @@
         if (hasCar && activePin !== -1) {
             document.getElementById('dev-pin-' + activePin)?.classList.add('active');
         }
+    });
+
+    // ── Raw GPIO Readings ──
+    devConnection.on("RawPinValues", (pins) => {
+        const rawBadge = document.getElementById('raw-badge');
+        rawBadge.textContent = 'Live';
+        rawBadge.className = 'pk-conn-badge live';
+
+        pins.forEach(({ pin, isHigh, idleIsHigh }) => {
+            // Raw value
+            const valCell = document.getElementById('raw-val-' + pin);
+            if (valCell) {
+                valCell.innerHTML = isHigh
+                    ? `<span class="raw-val is-high"><span class="dot"></span>1 — HIGH</span>`
+                    : `<span class="raw-val is-low"><span class="dot"></span>0 — LOW</span>`;
+            }
+
+            // Idle baseline (อ่านตอน startup)
+            const idleCell = document.getElementById('raw-idle-' + pin);
+            if (idleCell) {
+                idleCell.innerHTML = idleIsHigh
+                    ? `<span class="raw-val is-high" style="font-size:11px;"><span class="dot"></span>HIGH</span>`
+                    : `<span class="raw-val is-low"  style="font-size:11px;"><span class="dot"></span>LOW</span>`;
+            }
+
+            // triggered = ค่าปัจจุบัน ≠ baseline
+            const isTriggeringNow = isHigh !== idleIsHigh;
+            const statusCell = document.getElementById('raw-status-' + pin);
+            if (statusCell) {
+                statusCell.innerHTML = isTriggeringNow
+                    ? `<span class="raw-status triggering">🚗 CAR DETECTED</span>`
+                    : `<span class="raw-status not-trigger">Idle</span>`;
+            }
+
+            // Suggestion: บอกว่า trigger เมื่อสัญญาณเปลี่ยนจาก baseline
+            const hintCell = document.getElementById('raw-hint-' + pin);
+            if (hintCell) {
+                const triggerOn = idleIsHigh ? 'LOW' : 'HIGH';
+                hintCell.innerHTML = `<span class="raw-hint">⚑ Idle = ${idleIsHigh ? 'HIGH' : 'LOW'} → triggers on ${triggerOn}</span>`;
+            }
+
+            // Row highlight when triggering
+            const row = document.getElementById('raw-row-' + pin);
+            if (row) row.className = isTriggeringNow ? 'row-warning' : '';
+        });
     });
 
     async function startDevSignalR() {

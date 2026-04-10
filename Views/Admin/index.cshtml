@@ -275,7 +275,7 @@
         /* GPIO rows: stack cleanly */
         .pk-gpio-row { grid-template-columns: 44px 1fr; gap: 10px; }
         .pk-gpio-actions { grid-column: 1 / -1; }
-        .pk-gpio-actions form { width: 100%; flex-wrap: nowrap; }
+.pk-gpio-actions form { width: 100%; flex-wrap: nowrap; }
         .pk-file-wrap { flex: 1; min-width: 0; }
         .pk-file-btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 44px; display: flex; align-items: center; }
         .pk-gpio-row > form:last-child { grid-column: 1 / -1; text-align: right; }
@@ -717,5 +717,6 @@
         const btn   = document.querySelector(`.pk-rot-btn[data-deg="${saved}"]`);
         if (btn) selectRot(btn);
     })();
+
 
 </script>
