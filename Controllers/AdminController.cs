@@ -14,16 +14,18 @@ public class AdminController : Controller
     private readonly IWebHostEnvironment _env;
     private readonly LogService _logger;
     private readonly IHubContext<ParkingHub> _hubContext;
+    private readonly GpioBaselineService _baselineSvc;
 
     // เก็บ mute state ไว้บน server ให้ทุกหน้าดึงได้
     private static bool _kioskMuted = false;
 
-    public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger,IHubContext<ParkingHub> hubContext)
+    public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger, IHubContext<ParkingHub> hubContext, GpioBaselineService baselineSvc)
     {
         _db = db;
         _env = env;
         _logger = logger;
         _hubContext = hubContext;
+        _baselineSvc = baselineSvc;
     }
 
     // 1. หน้าหลัก Admin + ระบบคำนวณพื้นที่ Disk (SD Card)
@@ -129,6 +131,22 @@ public class AdminController : Controller
             _db.SaveChanges();
         }
         return RedirectToAction("Index");
+    }
+
+    // 3b. ตั้งค่า idle baseline ของ pin แบบ manual (override auto-detect)
+    [HttpPost]
+    public IActionResult SetBaseline(int pin, bool idleIsHigh)
+    {
+        _baselineSvc.SetManualBaseline(pin, idleIsHigh);
+        return Ok(new { pin, idleIsHigh });
+    }
+
+    // 3c. ล้าง manual override กลับไปใช้ค่า startup
+    [HttpPost]
+    public IActionResult ClearBaseline(int pin)
+    {
+        _baselineSvc.ClearManualBaseline(pin);
+        return Ok(new { pin });
     }
 
     // 4. ลบรูปภาพสถานะ
@@ -257,18 +275,31 @@ public class AdminController : Controller
     {
         try
         {
+            // isActive = ค่า signal ที่จำลอง (true=HIGH, false=LOW)
+            // hasCar = signal ต่างจาก idle baseline → triggered
+            bool isHigh  = isActive;
+            bool idleHigh = _baselineSvc.GetEffectiveBaseline(pin);
+            bool hasCar  = isHigh != idleHigh;
+
             // 🚀 สั่งบันทึก Log
-            string status = isActive ? "รถเข้าจอด (Manual)" : "รถออก (Manual)";
+            string sigLabel = isHigh ? "HIGH" : "LOW";
+            string status = hasCar
+                ? $"รถเข้าจอด (Manual Sim: {sigLabel})"
+                : $"ไม่มีรถ (Manual Sim: {sigLabel})";
             _logger.SaveLog(pin, status);
 
-            // 🚀 ดึงข้อมูลภาพจาก DB
-            var state = _db.ParkingStates.FirstOrDefault(s => s.GpioPin == pin);
-            string imagePath = state?.ImagePath ?? "";
+            // 🚀 ดึงข้อมูลภาพจาก DB (ใช้เฉพาะตอนมีรถ)
+            string imagePath = "";
+            if (hasCar)
+            {
+                var state = _db.ParkingStates.FirstOrDefault(s => s.GpioPin == pin);
+                imagePath = state?.ImagePath ?? "";
+            }
 
             // 🚀 ส่ง SignalR บังคับหน้า Kiosk ให้เปลี่ยนภาพทันที
-            await _hubContext.Clients.All.SendAsync("ReceiveStatus", imagePath, isActive, pin);
+            await _hubContext.Clients.All.SendAsync("ReceiveStatus", imagePath, hasCar, pin);
 
-            return Ok(new { success = true, pin = pin, state = isActive });
+            return Ok(new { success = true, pin, isHigh, idleHigh, hasCar });
         }
         catch (Exception ex)
         {

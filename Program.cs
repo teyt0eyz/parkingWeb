@@ -15,6 +15,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<GpioService>();
 builder.Services.AddSingleton<ParkingWeb.Services.LogService>();
+builder.Services.AddSingleton<ParkingWeb.Services.GpioBaselineService>();
 
 var app = builder.Build();
 

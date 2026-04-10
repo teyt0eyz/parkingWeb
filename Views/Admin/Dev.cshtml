@@ -168,6 +168,18 @@
 
     .raw-hint { font-size: 11px; color: #92400e; background: #fff7ed; border: 1px solid #fcd34d; border-radius: 6px; padding: 3px 9px; display: inline-block; }
 
+    /* ── Baseline Config Buttons ── */
+    .cfg-btn-wrap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .cfg-btn { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; border-radius: 6px; padding: 4px 10px; border: 1.5px solid; cursor: pointer; transition: all .15s; line-height: 1.4; }
+    .cfg-btn:active { transform: scale(.96); }
+    .cfg-btn.set-high { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .cfg-btn.set-high:hover { background: #bbf7d0; border-color: #4ade80; }
+    .cfg-btn.set-low  { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .cfg-btn.set-low:hover  { background: #fecaca; border-color: #f87171; }
+    .cfg-btn.set-auto { background: var(--border-lt); color: var(--ink-3); border-color: var(--border); font-size: 10px; }
+    .cfg-btn.set-auto:hover { background: var(--border); color: var(--ink-2); }
+    .cfg-manual-badge { font-size: 9px; font-weight: 700; font-family: 'JetBrains Mono', monospace; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; border-radius: 4px; padding: 1px 5px; }
+
     @@media (max-width: 900px) {
         .pk-two-col { grid-template-columns: 1fr; }
         .pin-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
@@ -240,8 +252,8 @@
                             <div class="pin-number">PIN @pin</div>
                         </div>
                         <div class="btn-group">
-                            <button class="dev-btn btn-in"  onclick="triggerPin(@pin, true)">🚗 CAR IN</button>
-                            <button class="dev-btn btn-out" onclick="triggerPin(@pin, false)">💨 CAR OUT</button>
+                            <button class="dev-btn btn-in"  onclick="triggerPin(@pin, true)">HIGH</button>
+                            <button class="dev-btn btn-out" onclick="triggerPin(@pin, false)">LOW</button>
                         </div>
                     </div>
                 }
@@ -326,6 +338,7 @@
                         <th>Idle Baseline</th>
                         <th>Status</th>
                         <th>Suggestion</th>
+                        <th>Config Baseline</th>
                     </tr>
                 </thead>
                 <tbody id="raw-tbody">
@@ -339,6 +352,14 @@
                             <td id="raw-idle-@pin"><span style="color:var(--ink-4);font-size:12px;">— waiting</span></td>
                             <td id="raw-status-@pin"><span class="raw-status not-trigger">—</span></td>
                             <td id="raw-hint-@pin"></td>
+                            <td>
+                                <div class="cfg-btn-wrap">
+                                    <button class="cfg-btn set-high" onclick="setBaseline(@pin, true)"  title="ตั้ง idle = HIGH (signal ปกติของขานี้คือ 1)">Idle = HIGH</button>
+                                    <button class="cfg-btn set-low"  onclick="setBaseline(@pin, false)" title="ตั้ง idle = LOW (signal ปกติของขานี้คือ 0)">Idle = LOW</button>
+                                    <button class="cfg-btn set-auto" id="cfg-auto-@pin" onclick="clearBaseline(@pin)" title="ล้าง override กลับไปใช้ค่า startup" style="display:none;">↺ Auto</button>
+                                    <span class="cfg-manual-badge" id="cfg-badge-@pin" style="display:none;">MANUAL</span>
+                                </div>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -366,7 +387,7 @@
     async function triggerPin(pin, isActive) {
         const terminal = document.getElementById('terminal');
         const time = new Date().toLocaleTimeString();
-        const action = isActive ? "CAR IN" : "CAR OUT";
+        const action = isActive ? "HIGH" : "LOW";
 
         try {
             const response = await fetch(`/Admin/ManualTrigger?pin=${pin}&isActive=${isActive}`, { method: 'POST' });
@@ -408,7 +429,7 @@
         rawBadge.textContent = 'Live';
         rawBadge.className = 'pk-conn-badge live';
 
-        pins.forEach(({ pin, isHigh, idleIsHigh }) => {
+        pins.forEach(({ pin, isHigh, idleIsHigh, isManual }) => {
             // Raw value
             const valCell = document.getElementById('raw-val-' + pin);
             if (valCell) {
@@ -417,13 +438,18 @@
                     : `<span class="raw-val is-low"><span class="dot"></span>0 — LOW</span>`;
             }
 
-            // Idle baseline (อ่านตอน startup)
+            // Idle baseline + MANUAL badge
             const idleCell = document.getElementById('raw-idle-' + pin);
             if (idleCell) {
+                const manualTag = isManual ? ` <span class="cfg-manual-badge">MANUAL</span>` : '';
                 idleCell.innerHTML = idleIsHigh
-                    ? `<span class="raw-val is-high" style="font-size:11px;"><span class="dot"></span>HIGH</span>`
-                    : `<span class="raw-val is-low"  style="font-size:11px;"><span class="dot"></span>LOW</span>`;
+                    ? `<span class="raw-val is-high" style="font-size:11px;"><span class="dot"></span>HIGH</span>${manualTag}`
+                    : `<span class="raw-val is-low"  style="font-size:11px;"><span class="dot"></span>LOW</span>${manualTag}`;
             }
+
+            // แสดง ↺ Auto เมื่อมี manual override
+            const autoBtn = document.getElementById('cfg-auto-' + pin);
+            if (autoBtn) autoBtn.style.display = isManual ? 'inline-flex' : 'none';
 
             // triggered = ค่าปัจจุบัน ≠ baseline
             const isTriggeringNow = isHigh !== idleIsHigh;
@@ -434,11 +460,11 @@
                     : `<span class="raw-status not-trigger">Idle</span>`;
             }
 
-            // Suggestion: บอกว่า trigger เมื่อสัญญาณเปลี่ยนจาก baseline
+            // Suggestion
             const hintCell = document.getElementById('raw-hint-' + pin);
             if (hintCell) {
                 const triggerOn = idleIsHigh ? 'LOW' : 'HIGH';
-                hintCell.innerHTML = `<span class="raw-hint">⚑ Idle = ${idleIsHigh ? 'HIGH' : 'LOW'} → triggers on ${triggerOn}</span>`;
+                hintCell.innerHTML = `<span class="raw-hint">⚑ Idle=${idleIsHigh ? 'HIGH' : 'LOW'} → trigger on ${triggerOn}</span>`;
             }
 
             // Row highlight when triggering
@@ -446,6 +472,33 @@
             if (row) row.className = isTriggeringNow ? 'row-warning' : '';
         });
     });
+
+    // ── Baseline Config ──
+    async function setBaseline(pin, idleIsHigh) {
+        const res = await fetch(`/Admin/SetBaseline?pin=${pin}&idleIsHigh=${idleIsHigh}`, { method: 'POST' });
+        if (!res.ok) { alert('Failed to set baseline'); return; }
+
+        // log to terminal
+        const time = new Date().toLocaleTimeString();
+        const sig  = idleIsHigh ? 'HIGH' : 'LOW';
+        const sigColor = idleIsHigh ? '#4ade80' : '#f87171';
+        const log = document.createElement('div');
+        log.className = 'log-entry';
+        log.innerHTML = `<span class="ts">[${time}]</span> PIN ${pin} → Idle baseline set to <span style="color:${sigColor};font-weight:700;">${sig}</span> (MANUAL)`;
+        document.getElementById('terminal').prepend(log);
+    }
+
+    async function clearBaseline(pin) {
+        const res = await fetch(`/Admin/ClearBaseline?pin=${pin}`, { method: 'POST' });
+        if (!res.ok) { alert('Failed to clear baseline'); return; }
+
+        const time = new Date().toLocaleTimeString();
+        const log = document.createElement('div');
+        log.className = 'log-entry';
+        log.style.borderLeftColor = '#94a3b8';
+        log.innerHTML = `<span class="ts">[${time}]</span> PIN ${pin} → Baseline cleared, back to auto-detect`;
+        document.getElementById('terminal').prepend(log);
+    }
 
     async function startDevSignalR() {
         try {

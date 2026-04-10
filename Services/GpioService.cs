@@ -2,6 +2,7 @@ using System.Device.Gpio;
 using Microsoft.AspNetCore.SignalR;
 using ParkingWeb.Hubs;
 using ParkingWeb.Data;
+
 namespace ParkingWeb.Services;
 
 public class GpioService : IHostedService
@@ -10,20 +11,18 @@ public class GpioService : IHostedService
     private readonly IHubContext<ParkingHub> _hub;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly LogService _logService;
+    private readonly GpioBaselineService _baseline;
 
     private readonly int[] _pins = { 17, 27, 22, 23, 24 };
     private int _activePin = -1;
 
-    // ค่า baseline ตอนไม่มีรถ (อ่านตอน startup)
-    // key = GpioPin, value = isHigh ตอน idle
-    private readonly Dictionary<int, bool> _idleValues = [];
-
-    public GpioService(IHubContext<ParkingHub> hub, IServiceScopeFactory scopeFactory, LogService logService)
+    public GpioService(IHubContext<ParkingHub> hub, IServiceScopeFactory scopeFactory, LogService logService, GpioBaselineService baseline)
     {
         _gpio = new GpioController();
         _hub = hub;
         _scopeFactory = scopeFactory;
         _logService = logService;
+        _baseline = baseline;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -33,28 +32,21 @@ public class GpioService : IHostedService
             _gpio.OpenPin(pin, PinMode.InputPullDown);
         }
 
-        // อ่านค่า raw ตอนเริ่มต้น — ถือว่าตอนนี้ไม่มีรถ (idle baseline)
-        CaptureIdleValues();
+        // อ่านค่า raw ตอนเริ่มต้น → ส่งให้ GpioBaselineService เก็บเป็น startup baseline
+        foreach (var pin in _pins)
+        {
+            _baseline.SetStartupBaseline(pin, _gpio.Read(pin) == PinValue.High);
+        }
 
         Task.Run(() => ListenToGpio(cancellationToken));
         return Task.CompletedTask;
     }
 
-    // อ่านค่าปัจจุบันของทุก pin แล้วเก็บเป็น "idle state"
-    private void CaptureIdleValues()
-    {
-        foreach (var pin in _pins)
-        {
-            _idleValues[pin] = _gpio.Read(pin) == PinValue.High;
-        }
-    }
-
-    // pin "active" (มีรถ) = ค่าปัจจุบันต่างจาก baseline
+    // pin "active" (มีรถ) = ค่าปัจจุบันต่างจาก effective baseline
     private bool IsPinActive(int pin)
     {
         bool currentHigh = _gpio.Read(pin) == PinValue.High;
-        bool idleHigh    = _idleValues.TryGetValue(pin, out var v) && v;
-        return currentHigh != idleHigh;
+        return currentHigh != _baseline.GetEffectiveBaseline(pin);
     }
 
     private async Task ListenToGpio(CancellationToken ct)
@@ -71,9 +63,10 @@ public class GpioService : IHostedService
                 {
                     pin        = p,
                     isHigh     = _gpio.Read(p) == PinValue.High,
-                    idleIsHigh = _idleValues.TryGetValue(p, out var iv) && iv
+                    idleIsHigh = _baseline.GetEffectiveBaseline(p),
+                    isManual   = _baseline.IsManualOverride(p)
                 }).ToList();
-                await _hub.Clients.All.SendAsync("RawPinValues", rawValues);
+                await _hub.Clients.All.SendAsync("RawPinValues", rawValues, ct);
                 rawBroadcastCounter = 0;
             }
 
@@ -103,7 +96,7 @@ public class GpioService : IHostedService
                     }
                 }
 
-                await _hub.Clients.All.SendAsync("ReceiveStatus", imagePath, true);
+                await _hub.Clients.All.SendAsync("ReceiveStatus", imagePath, true, ct);
                 _activePin = triggeredPin;
             }
             // กรณีที่ 2: รถออก (กลับสู่หน้า Video ปกติ)
@@ -111,7 +104,7 @@ public class GpioService : IHostedService
             {
                 _logService.SaveLog(_activePin, $"CLEARED: Car departed from Pin {_activePin}. System returned to Idle Video.");
 
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "", false);
+                await _hub.Clients.All.SendAsync("ReceiveStatus", "", false, ct);
                 _activePin = -1;
             }
 
