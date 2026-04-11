@@ -13,6 +13,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+
+// จำกัด request body สูงสุด 210 MB (ครอบ video 200 MB + overhead)
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
+{
+    o.MultipartBodyLengthLimit = 210L * 1024 * 1024;
+});
+builder.WebHost.ConfigureKestrel(k =>
+{
+    k.Limits.MaxRequestBodySize = 210L * 1024 * 1024;
+});
 builder.Services.AddHostedService<GpioService>();
 builder.Services.AddSingleton<ParkingWeb.Services.LogService>();
 builder.Services.AddSingleton<ParkingWeb.Services.GpioBaselineService>();

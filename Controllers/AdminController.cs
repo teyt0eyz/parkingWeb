@@ -93,21 +93,35 @@ public class AdminController : Controller
     [HttpPost]
     public async Task<IActionResult> UpdateIdleVideo(IFormFile videoFile)
     {
-        if (videoFile != null && videoFile.Length > 0)
+        const long MaxVideoBytes = 200L * 1024 * 1024; // 200 MB
+
+        if (videoFile == null || videoFile.Length == 0)
         {
-            string uploadDir = Path.Combine(_env.WebRootPath, "videos");
-            if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
-
-            // บันทึกเป็น idle.mp4 เสมอ เพื่อให้ Home/index โหลดได้ทันที
-            string path = Path.Combine(uploadDir, "idle.mp4");
-            using (var stream = new FileStream(path, FileMode.Create))
-            {
-                await videoFile.CopyToAsync(stream);
-            }
-
-            // แจ้ง Kiosk ให้ reload หน้าใหม่เพื่อโหลดวิดีโอล่าสุด
-            await _hubContext.Clients.All.SendAsync("ReloadPage");
+            TempData["UploadError"] = "กรุณาเลือกไฟล์วิดีโอ";
+            return RedirectToAction("Index");
         }
+        if (videoFile.Length > MaxVideoBytes)
+        {
+            TempData["UploadError"] = $"ไฟล์วิดีโอใหญ่เกิน 200 MB (ขนาดไฟล์: {videoFile.Length / 1024 / 1024} MB)";
+            return RedirectToAction("Index");
+        }
+        var allowedVideoTypes = new[] { "video/mp4", "video/mpeg" };
+        if (!allowedVideoTypes.Contains(videoFile.ContentType.ToLower()))
+        {
+            TempData["UploadError"] = "รองรับเฉพาะไฟล์ MP4 เท่านั้น";
+            return RedirectToAction("Index");
+        }
+
+        string uploadDir = Path.Combine(_env.WebRootPath, "videos");
+        if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+        string path = Path.Combine(uploadDir, "idle.mp4");
+        using (var stream = new FileStream(path, FileMode.Create))
+        {
+            await videoFile.CopyToAsync(stream);
+        }
+
+        await _hubContext.Clients.All.SendAsync("ReloadPage");
         return RedirectToAction("Index");
     }
 
@@ -115,29 +129,47 @@ public class AdminController : Controller
     [HttpPost]
     public async Task<IActionResult> UpdateStateImage(int id, IFormFile imageFile)
     {
-        var state = _db.ParkingStates.Find(id);
-        if (state != null && imageFile != null && imageFile.Length > 0)
+        const long MaxImageBytes = 10L * 1024 * 1024; // 10 MB
+
+        if (imageFile == null || imageFile.Length == 0)
         {
-            if (!string.IsNullOrEmpty(state.ImagePath))
-            {
-                string oldPath = Path.Combine(_env.WebRootPath, "uploads", state.ImagePath);
-                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-            }
-
-            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-            string path = Path.Combine(_env.WebRootPath, "uploads", fileName);
-            
-            if (!Directory.Exists(Path.Combine(_env.WebRootPath, "uploads"))) 
-                Directory.CreateDirectory(Path.Combine(_env.WebRootPath, "uploads"));
-
-            using (var stream = new FileStream(path, FileMode.Create))
-            {
-                await imageFile.CopyToAsync(stream);
-            }
-
-            state.ImagePath = fileName;
-            _db.SaveChanges();
+            TempData["UploadError"] = "กรุณาเลือกไฟล์รูปภาพ";
+            return RedirectToAction("Index");
         }
+        if (imageFile.Length > MaxImageBytes)
+        {
+            TempData["UploadError"] = $"ไฟล์รูปภาพใหญ่เกิน 10 MB (ขนาดไฟล์: {imageFile.Length / 1024 / 1024} MB)";
+            return RedirectToAction("Index");
+        }
+        var allowedImageTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp" };
+        if (!allowedImageTypes.Contains(imageFile.ContentType.ToLower()))
+        {
+            TempData["UploadError"] = "รองรับเฉพาะไฟล์รูปภาพ (JPEG, PNG, GIF, WEBP, BMP)";
+            return RedirectToAction("Index");
+        }
+
+        var state = _db.ParkingStates.Find(id);
+        if (state == null) return RedirectToAction("Index");
+
+        if (!string.IsNullOrEmpty(state.ImagePath))
+        {
+            string oldPath = Path.Combine(_env.WebRootPath, "uploads", state.ImagePath);
+            if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+        }
+
+        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+        string path = Path.Combine(_env.WebRootPath, "uploads", fileName);
+
+        if (!Directory.Exists(Path.Combine(_env.WebRootPath, "uploads")))
+            Directory.CreateDirectory(Path.Combine(_env.WebRootPath, "uploads"));
+
+        using (var stream = new FileStream(path, FileMode.Create))
+        {
+            await imageFile.CopyToAsync(stream);
+        }
+
+        state.ImagePath = fileName;
+        _db.SaveChanges();
         return RedirectToAction("Index");
     }
 
