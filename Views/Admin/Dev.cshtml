@@ -7,192 +7,340 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-        --blue:       #2563EB;
-        --blue-dk:    #1D4ED8;
-        --blue-lt:    #EFF6FF;
-        --blue-bd:    #BFDBFE;
-        --ink:        #0F172A;
-        --ink-2:      #334155;
-        --ink-3:      #64748B;
-        --ink-4:      #94A3B8;
-        --bg:         #F8FAFC;
-        --white:      #ffffff;
-        --border:     #E2E8F0;
-        --border-lt:  #F1F5F9;
-        --green-lt:   #F0FDF4;
-        --green-bd:   #BBF7D0;
-        --green-tx:   #166534;
-        --green-dot:  #16A34A;
-        --red:        #ef4444;
-        --red-lt:     #FEF2F2;
-        --red-bd:     #FECACA;
-        --red-tx:     #991B1B;
-        --amber:      #F59E0B;
-        --amber-lt:   #FFFBEB;
-        --amber-bd:   #FDE68A;
-        --amber-tx:   #92400E;
-        --radius-sm:  8px;
-        --radius-md:  10px;
-        --radius-lg:  14px;
-    }
+:root {
+    --bg:        #f1f5f9;
+    --surface:   #ffffff;
+    --surface-2: #f8fafc;
+    --surface-3: #f1f5f9;
+    --border:    #e2e8f0;
+    --border-lt: #cbd5e1;
+    --ink:       #0f172a;
+    --ink-2:     #1e293b;
+    --ink-3:     #475569;
+    --ink-4:     #94a3b8;
+    --green:     #16a34a;
+    --green-lt:  rgba(22,163,74,.1);
+    --green-bd:  rgba(22,163,74,.3);
+    --red:       #dc2626;
+    --red-lt:    rgba(220,38,38,.1);
+    --red-bd:    rgba(220,38,38,.25);
+    --blue:      #2563eb;
+    --blue-lt:   rgba(37,99,235,.1);
+    --blue-bd:   rgba(37,99,235,.25);
+    --amber:     #b45309;
+    --amber-lt:  rgba(180,83,9,.08);
+    --amber-bd:  rgba(180,83,9,.25);
+    --purple:    #7c3aed;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
 
-    body {
-        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        background: var(--bg);
-        color: var(--ink);
-        font-size: 14px;
-        line-height: 1.6;
-        -webkit-font-smoothing: antialiased;
-    }
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+}
 
-    /* ── Topbar ── */
-    .pk-topbar {
-        background: var(--white); border-bottom: 1px solid var(--border);
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 0 28px; height: 58px; position: sticky; top: 0; z-index: 100;
-        box-shadow: 0 1px 3px rgba(0,0,0,.04);
-    }
-    .pk-brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: var(--ink); text-decoration: none; letter-spacing: -.2px; }
-    .pk-logo { width: 34px; height: 34px; background: var(--blue); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,.25); }
-    .pk-logo svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .pk-nav-tag { font-size: 10px; color: var(--ink-3); background: var(--border-lt); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-family: 'JetBrains Mono', monospace; font-weight: 500; letter-spacing: .3px; }
-    .pk-avatar { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--amber-lt), var(--amber-bd)); border: 1.5px solid #FCD34D; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--amber-tx); letter-spacing: -.3px; }
+/* ── Topbar ── */
+.pk-topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; height: 58px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 1px 8px rgba(0,0,0,.06);
+}
+.pk-brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: var(--ink); text-decoration: none; }
+.pk-logo  { width: 32px; height: 32px; background: linear-gradient(135deg,#2563eb,#6366f1); border-radius: 9px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(99,102,241,.25); }
+.pk-logo svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pk-nav-tag { font-size: 10px; color: var(--amber); background: var(--amber-lt); border: 1px solid var(--amber-bd); border-radius: 6px; padding: 3px 10px; font-family: 'JetBrains Mono', monospace; font-weight: 600; letter-spacing: .5px; }
+.pk-avatar { width: 32px; height: 32px; border-radius: 8px; background: var(--amber-lt); border: 1.5px solid var(--amber-bd); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--amber); }
 
-    /* ── Hero ── */
-    .pk-hero { background: var(--white); border-bottom: 1px solid var(--border); padding: 26px 32px; }
-    .pk-hero-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
-    .pk-crumb { font-size: 11px; color: var(--ink-4); display: flex; align-items: center; gap: 5px; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
-    .pk-crumb svg { width: 9px; height: 9px; stroke: var(--ink-4); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .pk-hero-title { font-size: 24px; font-weight: 700; color: var(--ink); letter-spacing: -.4px; }
-    .pk-hero-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
-    .pk-dev-badge { display: flex; align-items: center; gap: 8px; background: var(--amber-lt); border: 1px solid var(--amber-bd); border-radius: 100px; padding: 8px 16px; font-size: 12px; color: var(--amber-tx); font-weight: 600; white-space: nowrap; }
-    .pk-dev-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); flex-shrink: 0; }
+/* ── Hero ── */
+.pk-hero {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 32px;
+    position: relative; overflow: hidden;
+}
+.pk-hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(180,83,9,.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+.pk-hero-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+.pk-crumb { font-size: 11px; color: var(--ink-4); display: flex; align-items: center; gap: 5px; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
+.pk-crumb a { color: var(--blue); text-decoration: none; }
+.pk-crumb a:hover { text-decoration: underline; }
+.pk-crumb svg { width: 8px; height: 8px; stroke: var(--ink-4); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pk-hero-title { font-size: 22px; font-weight: 700; color: var(--ink); letter-spacing: -.3px; }
+.pk-hero-sub   { font-size: 13px; color: var(--ink-3); margin-top: 3px; }
+.pk-dev-badge  { display: flex; align-items: center; gap: 8px; background: var(--amber-lt); border: 1px solid var(--amber-bd); border-radius: 100px; padding: 7px 16px; font-size: 12px; color: var(--amber); font-weight: 600; }
+.pk-dev-dot    { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); animation: pulse-amber 2s ease-out infinite; }
+@@keyframes pulse-amber { 0%{box-shadow:0 0 0 0 rgba(180,83,9,.5);} 70%{box-shadow:0 0 0 7px transparent;} 100%{box-shadow:0 0 0 0 transparent;} }
 
-    /* ── Content ── */
-    .pk-content { max-width: 1180px; margin: 0 auto; padding: 24px 32px 56px; display: flex; flex-direction: column; gap: 18px; }
+/* ── Content ── */
+.pk-content { max-width: 1180px; margin: 0 auto; padding: 24px 32px 56px; display: flex; flex-direction: column; gap: 20px; }
 
-    /* ── Card ── */
-    .pk-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-    .pk-card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--border-lt); }
-    .pk-card-head-left { display: flex; align-items: center; gap: 9px; }
-    .pk-card-accent { width: 3px; height: 17px; border-radius: 2px; flex-shrink: 0; }
-    .pk-card-accent.green { background: var(--green-dot); }
-    .pk-card-accent.amber { background: var(--amber); }
-    .pk-card-accent.blue  { background: var(--blue); }
-    .pk-card-num { width: 22px; height: 22px; background: var(--white); border: 1px solid var(--border); border-radius: 6px; font-size: 10px; font-weight: 700; color: var(--ink-3); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; }
-    .pk-card-title { font-size: 14px; font-weight: 700; color: var(--ink); }
-    .pk-card-meta { font-size: 11px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
-    .pk-card-body { padding: 20px; }
+/* ── Card ── */
+.pk-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+.pk-card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); }
+.pk-card-head-left { display: flex; align-items: center; gap: 10px; }
+.pk-card-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pk-card-icon svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pk-card-icon.green  { background: linear-gradient(135deg,#15803d,#16a34a); box-shadow: 0 2px 8px rgba(22,163,74,.2); }
+.pk-card-icon.blue   { background: linear-gradient(135deg,#1d4ed8,#2563eb); box-shadow: 0 2px 8px rgba(37,99,235,.2); }
+.pk-card-icon.amber  { background: linear-gradient(135deg,#92400e,#b45309); box-shadow: 0 2px 8px rgba(180,83,9,.2); }
+.pk-card-icon.purple { background: linear-gradient(135deg,#6d28d9,#7c3aed); box-shadow: 0 2px 8px rgba(124,58,237,.2); }
+.pk-card-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+.pk-card-meta  { font-size: 11px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; }
+.pk-card-body  { padding: 20px; }
 
-    /* ── Pin Grid (GPIO Simulation) ── */
-    .pin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
-    .pin-card {
-        background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-md);
-        padding: 16px; transition: all .2s ease;
-    }
-    .pin-card:hover { border-color: var(--green-bd); background: var(--green-lt); box-shadow: 0 4px 14px rgba(0,0,0,.05); transform: translateY(-1px); }
-    .pin-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
-    .pin-name { font-weight: 700; font-size: 13px; color: var(--ink); line-height: 1.4; }
-    .pin-number { font-size: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--blue); background: var(--blue-lt); border: 1px solid var(--blue-bd); border-radius: 5px; padding: 2px 7px; white-space: nowrap; flex-shrink: 0; }
+/* ── Connection Badge ── */
+.pk-conn-badge { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; border-radius: 6px; padding: 4px 10px; }
+.pk-conn-badge.live { background: var(--green-lt); color: var(--green); border: 1px solid var(--green-bd); }
+.pk-conn-badge.off  { background: var(--red-lt);   color: var(--red);   border: 1px solid var(--red-bd); }
 
-    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .dev-btn {
-        border: none; padding: 9px 6px; border-radius: var(--radius-sm); cursor: pointer;
-        font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; font-weight: 600;
-        transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 4px;
-    }
-    .btn-in  { background: var(--green-lt); color: var(--green-tx); border: 1.5px solid var(--green-bd); }
-    .btn-in:hover  { background: #dcfce7; border-color: var(--green-dot); }
-    .btn-out { background: var(--red-lt); color: var(--red-tx); border: 1.5px solid var(--red-bd); }
-    .btn-out:hover { background: #fee2e2; border-color: var(--red); }
-    .dev-btn:active { transform: scale(0.97); opacity: .85; }
+/* ── Pin Grid ── */
+.pin-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.pin-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    transition: border-color .2s, box-shadow .2s, transform .2s, background .2s;
+    position: relative;
+    display: flex; flex-direction: column;
+}
+.pin-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--border); border-radius: var(--radius-md) var(--radius-md) 0 0;
+    transition: background .2s;
+}
+.pin-card:hover { border-color: var(--green-bd); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+.pin-card:hover::before { background: linear-gradient(90deg, var(--green), #15803d); }
+.pin-card.is-active { border-color: var(--green-bd); background: linear-gradient(135deg, var(--surface-2), rgba(22,163,74,.05)); }
+.pin-card.is-active::before { background: linear-gradient(90deg, var(--green), #86efac); }
 
-    /* ── Two-col ── */
-    .pk-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.pin-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 10px; gap: 6px; flex-wrap: wrap;
+}
+.pin-name { font-size: 12px; font-weight: 700; color: var(--ink-2); line-height: 1.4; min-width: 0; flex: 1; }
+.pin-number {
+    font-size: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 600;
+    color: var(--blue); background: var(--blue-lt); border: 1px solid var(--blue-bd);
+    border-radius: 5px; padding: 2px 7px; white-space: nowrap; flex-shrink: 0;
+}
+.pin-state-row { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; flex-grow: 1; }
+.pin-state-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-lt); transition: all .3s; flex-shrink: 0; }
+.pin-state-dot.is-high { background: var(--green); box-shadow: 0 0 6px rgba(22,163,74,.5); }
+.pin-state-dot.is-low  { background: var(--red);   box-shadow: 0 0 6px rgba(220,38,38,.4); }
+.pin-state-label { font-size: 11px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; transition: color .3s; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* ── GPIO Live Monitor ── */
-    .pk-gpio-monitor-grid { display: flex; gap: 10px; flex-wrap: wrap; }
-    .gpio-monitor-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-md); min-width: 72px; transition: all .3s ease; }
-    .gpio-led { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; box-shadow: inset 0 1px 3px rgba(0,0,0,.1); transition: all .3s ease; }
-    .gpio-label { font-size: 10px; font-weight: 600; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; }
-.gpio-monitor-item.active { border-color: var(--green-bd); background: var(--green-lt); }
-    .gpio-monitor-item.active .gpio-led { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,.5); }
-    .gpio-monitor-item.active .gpio-label { color: var(--green-tx); }
-    .pk-conn-badge { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; border-radius: 6px; padding: 4px 10px; }
-    .pk-conn-badge.live { background: var(--green-lt); color: var(--green-tx); border: 1px solid var(--green-bd); }
-    .pk-conn-badge.off  { background: var(--red-lt); color: var(--red); border: 1px solid var(--red-bd); }
-    .pk-legend { display: flex; gap: 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-lt); flex-wrap: wrap; }
-    .pk-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-3); font-weight: 500; }
+.btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.dev-btn {
+    border: none; padding: 9px 4px; border-radius: var(--radius-sm); cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 4px;
+    letter-spacing: .3px; min-width: 0; overflow: hidden; white-space: nowrap;
+}
+.dev-btn svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.btn-high { background: var(--green-lt); color: var(--green); border: 1.5px solid var(--green-bd); }
+.btn-high:hover { background: rgba(22,163,74,.18); box-shadow: 0 2px 8px rgba(22,163,74,.15); }
+.btn-low  { background: var(--red-lt);   color: var(--red);   border: 1.5px solid var(--red-bd); }
+.btn-low:hover  { background: rgba(220,38,38,.18);  box-shadow: 0 2px 8px rgba(220,38,38,.15); }
+.dev-btn:active { transform: scale(.96); }
 
-    /* ── Activity Terminal ── */
-    .dev-terminal {
-        background: #0f172a; border: 1px solid #1e293b;
-        border-radius: var(--radius-md); padding: 16px;
-        font-size: 12px; height: 200px; overflow-y: auto;
-        font-family: 'JetBrains Mono', monospace; line-height: 1.7;
-    }
-    .log-entry { margin-bottom: 2px; border-left: 2px solid #22c55e; padding-left: 10px; color: #e2e8f0; }
-    .log-entry .ts { color: #64748b; margin-right: 4px; }
-    .log-entry.boot { border-left-color: #334155; }
-    .log-entry.boot .ts { color: #475569; }
+/* ── Two-col ── */
+.pk-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
 
-    /* ── Footer ── */
-    .pk-footer-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding-top: 6px; }
-    .pk-footer-meta { font-size: 12px; color: var(--ink-4); display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
-    .pk-footer-meta svg { width: 13px; height: 13px; stroke: var(--ink-4); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-    .btn-pk-secondary { font-size: 13px; font-weight: 600; color: var(--ink-2); background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 18px; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all .15s; }
-    .btn-pk-secondary:hover { background: var(--border-lt); box-shadow: 0 2px 6px rgba(0,0,0,.06); }
-    .btn-pk-secondary svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* ── GPIO Live Monitor ── */
+.monitor-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.monitor-item {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 14px 10px; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-md); transition: all .3s ease;
+    position: relative; cursor: default;
+}
+.monitor-led-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+.monitor-led {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--border-lt); border: 2px solid var(--border);
+    transition: all .3s ease; position: relative; z-index: 1;
+}
+.monitor-led-ring {
+    position: absolute; width: 28px; height: 28px; border-radius: 50%;
+    background: transparent; border: 2px solid transparent; transition: all .3s;
+}
+.monitor-pin  { font-size: 11px; font-weight: 700; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; }
+.monitor-name { font-size: 9px; color: var(--ink-4); text-align: center; max-width: 70px; line-height: 1.3; }
+.monitor-item.active { border-color: var(--green-bd); background: linear-gradient(135deg, #f0fdf4, #dcfce7); box-shadow: 0 2px 12px rgba(22,163,74,.12); }
+.monitor-item.active .monitor-led { background: var(--green); border-color: #86efac; box-shadow: 0 0 10px rgba(22,163,74,.5); }
+.monitor-item.active .monitor-led-ring { border-color: rgba(22,163,74,.3); animation: ring-pulse 1.5s ease-out infinite; }
+.monitor-item.active .monitor-pin  { color: var(--green); }
+.monitor-item.active .monitor-name { color: #15803d; }
+@@keyframes ring-pulse { 0%{transform:scale(.9);opacity:1;} 100%{transform:scale(1.6);opacity:0;} }
 
-    /* ── Raw GPIO Readings Table ── */
-    .raw-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
-    .raw-table th { text-align: left; font-size: 10px; font-weight: 600; color: var(--ink-4); text-transform: uppercase; letter-spacing: .5px; padding: 0 12px 10px; border-bottom: 1px solid var(--border); }
-    .raw-table td { padding: 11px 12px; border-bottom: 1px solid var(--border-lt); vertical-align: middle; }
-    .raw-table tr:last-child td { border-bottom: none; }
-    .raw-table tr.row-warning td { background: #fff7ed; }
+.monitor-legend { display: flex; gap: 16px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-3); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-    .raw-val { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; }
-    .raw-val .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .raw-val.is-high { color: #16a34a; }
-    .raw-val.is-high .dot { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.5); }
-    .raw-val.is-low  { color: #dc2626; }
-    .raw-val.is-low  .dot { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,.5); }
+/* ── Terminal ── */
+.dev-terminal {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    height: 240px; overflow-y: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; line-height: 1.8;
+    scrollbar-width: thin; scrollbar-color: var(--border-lt) transparent;
+}
+.dev-terminal::-webkit-scrollbar { width: 4px; }
+.dev-terminal::-webkit-scrollbar-thumb { background: var(--border-lt); border-radius: 4px; }
+.log-entry { padding-left: 10px; border-left: 2px solid var(--green); color: var(--ink-2); word-break: break-all; }
+.log-entry + .log-entry { margin-top: 3px; }
+.log-entry .ts { color: var(--ink-4); margin-right: 6px; }
+.log-entry.boot { border-left-color: var(--border-lt); color: var(--ink-4); }
+.log-entry.err  { border-left-color: var(--red); }
 
-    .raw-status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 3px 9px; }
-    .raw-status.triggering    { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
-    .raw-status.not-trigger   { background: var(--border-lt); color: var(--ink-4); border: 1px solid var(--border); }
-    .raw-status.warn          { background: #fff7ed; color: #92400e; border: 1px solid #fcd34d; }
+/* ── Raw GPIO Table ── */
+.raw-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.raw-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 640px; }
+.raw-table th {
+    text-align: left; font-size: 9px; font-weight: 600; color: var(--ink-4);
+    text-transform: uppercase; letter-spacing: .7px;
+    padding: 10px 14px 8px; border-bottom: 1px solid var(--border);
+    background: var(--surface-2); font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+}
+.raw-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--ink-2); }
+.raw-table tbody tr:last-child td { border-bottom: none; }
+.raw-table tbody tr:hover td { background: var(--surface-2); }
+.raw-table tbody tr.row-active td { background: #f0fdf4; }
+.raw-table tbody tr.row-active td:first-child { border-left: 2px solid var(--green); }
 
-    .raw-hint { font-size: 11px; color: #92400e; background: #fff7ed; border: 1px solid #fcd34d; border-radius: 6px; padding: 3px 9px; display: inline-block; }
+.raw-pin-cell { display: flex; flex-direction: column; gap: 2px; }
+.raw-pin-num  { font-size: 13px; font-weight: 700; color: var(--blue); font-family: 'JetBrains Mono', monospace; }
+.raw-pin-name { font-size: 10px; color: var(--ink-4); }
 
-    /* ── Baseline Config Buttons ── */
-    .cfg-btn-wrap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .cfg-btn { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; border-radius: 6px; padding: 4px 10px; border: 1.5px solid; cursor: pointer; transition: all .15s; line-height: 1.4; }
-    .cfg-btn:active { transform: scale(.96); }
-    .cfg-btn.set-high { background: #dcfce7; color: #166534; border-color: #86efac; }
-    .cfg-btn.set-high:hover { background: #bbf7d0; border-color: #4ade80; }
-    .cfg-btn.set-low  { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
-    .cfg-btn.set-low:hover  { background: #fecaca; border-color: #f87171; }
-    .cfg-btn.set-auto { background: var(--border-lt); color: var(--ink-3); border-color: var(--border); font-size: 10px; }
-    .cfg-btn.set-auto:hover { background: var(--border); color: var(--ink-2); }
-    .cfg-manual-badge { font-size: 9px; font-weight: 700; font-family: 'JetBrains Mono', monospace; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; border-radius: 4px; padding: 1px 5px; }
+.raw-val { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+.raw-val .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.raw-val.is-high { color: var(--green); }
+.raw-val.is-high .dot { background: var(--green); box-shadow: 0 0 5px rgba(22,163,74,.5); }
+.raw-val.is-low  { color: var(--red); }
+.raw-val.is-low  .dot { background: var(--red);   box-shadow: 0 0 5px rgba(220,38,38,.4); }
+.raw-val.waiting { color: var(--ink-4); font-size: 11px; }
 
-    @@media (max-width: 900px) {
-        .pk-two-col { grid-template-columns: 1fr; }
-        .pin-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-    }
-    @@media (max-width: 640px) {
-        .pk-topbar  { padding: 0 16px; height: 54px; }
-        .pk-hero    { padding: 20px 16px; }
-        .pk-content { padding: 16px 16px 48px; }
-        .pk-hero-title { font-size: 20px; }
-        .pk-card-body { padding: 16px; }
-        .pk-nav-tag { display: none; }
-        .dev-terminal { height: 160px; }
-    }
+.raw-status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 3px 9px; font-family: 'JetBrains Mono', monospace; }
+.raw-status.triggering  { background: var(--green-lt); color: var(--green); border: 1px solid var(--green-bd); }
+.raw-status.not-trigger { background: var(--surface-2); color: var(--ink-4); border: 1px solid var(--border); }
+
+.raw-hint { font-size: 10px; color: var(--amber); background: var(--amber-lt); border: 1px solid var(--amber-bd); border-radius: 5px; padding: 2px 8px; display: inline-block; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+
+/* ── Baseline Config Buttons ── */
+.cfg-btn-wrap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cfg-btn {
+    font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+    border-radius: 6px; padding: 4px 10px; border: 1px solid; cursor: pointer;
+    transition: all .15s; line-height: 1.5; white-space: nowrap;
+}
+.cfg-btn:active { transform: scale(.95); }
+.cfg-btn.set-high { background: var(--green-lt); color: var(--green); border-color: var(--green-bd); }
+.cfg-btn.set-high:hover { background: rgba(22,163,74,.18); }
+.cfg-btn.set-low  { background: var(--red-lt);   color: var(--red);   border-color: var(--red-bd); }
+.cfg-btn.set-low:hover  { background: rgba(220,38,38,.18); }
+.cfg-btn.set-auto { background: var(--surface-3); color: var(--ink-3); border-color: var(--border-lt); }
+.cfg-btn.set-auto:hover { background: var(--border-lt); color: var(--ink-2); }
+.cfg-manual-badge { font-size: 9px; font-weight: 700; font-family: 'JetBrains Mono', monospace; background: var(--amber-lt); color: var(--amber); border: 1px solid var(--amber-bd); border-radius: 4px; padding: 1px 5px; }
+
+/* ── Footer ── */
+.pk-footer-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding-top: 6px; }
+.pk-footer-meta { font-size: 11px; color: var(--ink-4); display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; }
+.pk-footer-meta svg { width: 12px; height: 12px; stroke: var(--ink-4); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.btn-back { font-size: 13px; font-weight: 600; color: var(--ink-2); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 18px; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all .15s; }
+.btn-back:hover { background: var(--surface-2); color: var(--ink); border-color: var(--border-lt); }
+.btn-back svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Responsive ── */
+
+/* Tablet landscape */
+@@media (max-width: 1024px) {
+    .pin-grid     { grid-template-columns: repeat(3, 1fr); }
+    .monitor-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Tablet portrait */
+@@media (max-width: 900px) {
+    .pk-two-col   { grid-template-columns: 1fr; }
+    .pin-grid     { grid-template-columns: repeat(3, 1fr); }
+    .monitor-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* Large phone / small tablet (~640px) */
+@@media (max-width: 640px) {
+    .pk-topbar     { padding: 0 16px; }
+    .pk-hero       { padding: 18px 16px; }
+    .pk-content    { padding: 14px 16px 40px; }
+    .pk-hero-title { font-size: 18px; }
+    .pk-hero-sub   { font-size: 12px; }
+    .pk-card-body  { padding: 12px; }
+    .pk-nav-tag    { display: none; }
+    .pk-dev-badge  { font-size: 11px; padding: 5px 12px; }
+    .dev-terminal  { height: 190px; }
+    .pin-grid      { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .monitor-grid  { grid-template-columns: repeat(3, 1fr); }
+    .monitor-name  { display: none; }
+    .pk-card-meta  { display: none; }
+    .pk-footer-bar { flex-direction: column; align-items: flex-start; }
+}
+
+/* Phone portrait (~480px) */
+@@media (max-width: 480px) {
+    .pk-content    { padding: 12px 12px 36px; }
+    .pk-topbar     { padding: 0 12px; }
+    .pk-card-head  { padding: 11px 14px; gap: 8px; flex-wrap: wrap; }
+    .pk-card-body  { padding: 10px; }
+    .pin-grid      { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .pin-card      { padding: 12px 10px; }
+    .pin-name      { font-size: 11px; }
+    /* ซ่อน SVG ในปุ่ม บนจอแคบ ให้มีที่แสดงข้อความพอ */
+    .dev-btn svg   { display: none; }
+    .dev-btn       { font-size: 11px; padding: 9px 6px; gap: 0; }
+    .monitor-grid  { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .monitor-item  { padding: 10px 4px; }
+    .monitor-led   { width: 14px; height: 14px; }
+    .monitor-led-ring { width: 22px; height: 22px; }
+    .monitor-pin   { font-size: 9px; }
+    .monitor-name  { display: none; }
+    .dev-terminal  { height: 160px; font-size: 11px; }
+    .cfg-btn-wrap  { flex-direction: column; align-items: flex-start; }
+    .pk-hero-inner { flex-direction: column; align-items: flex-start; }
+    .pk-dev-badge  { display: none; }
+}
+
+/* Very narrow phones (~360px) */
+@@media (max-width: 360px) {
+    .pk-hero       { padding: 14px 10px; }
+    .pk-content    { padding: 10px 10px 32px; }
+    .pk-card-body  { padding: 8px; }
+    .pin-grid      { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .pin-card      { padding: 10px 8px; }
+    .pin-name      { font-size: 10px; }
+    .pin-state-label { display: none; }
+    .dev-btn       { font-size: 11px; padding: 8px 4px; }
+    .dev-terminal  { height: 140px; }
+}
 </style>
 
 <!-- ── Topbar ── -->
@@ -204,7 +352,7 @@
         Parking Management System
     </a>
     <div style="display:flex;align-items:center;gap:10px;">
-        <span class="pk-nav-tag">Dev Console</span>
+        <span class="pk-nav-tag">DEV CONSOLE</span>
         <div class="pk-avatar">DEV</div>
     </div>
 </div>
@@ -214,16 +362,16 @@
     <div class="pk-hero-inner">
         <div>
             <div class="pk-crumb">
-                Admin
+                <a href="/Admin">Admin</a>
                 <svg viewBox="0 0 12 12"><path d="M4.5 3l3 3-3 3"/></svg>
                 Developer Console
             </div>
             <div class="pk-hero-title">Developer Console</div>
-            <div class="pk-hero-sub">GPIO Hardware Simulation, Live Monitor &amp; Log Testing</div>
+            <div class="pk-hero-sub">GPIO Simulation · Live Monitor · Raw Readings · Baseline Config</div>
         </div>
         <div class="pk-dev-badge">
             <div class="pk-dev-dot"></div>
-            Dev Mode
+            Dev Mode Active
         </div>
     </div>
 </div>
@@ -235,25 +383,38 @@
     <div class="pk-card">
         <div class="pk-card-head">
             <div class="pk-card-head-left">
-                <div class="pk-card-accent green"></div>
-                <div class="pk-card-num">01</div>
-                <span class="pk-card-title">GPIO Hardware Simulation</span>
+                <div class="pk-card-icon green">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                </div>
+                <div>
+                    <div class="pk-card-title">GPIO Simulation</div>
+                </div>
             </div>
-            <span class="pk-card-meta">@monitorPins.Length zones · manual trigger</span>
+            <span class="pk-card-meta">@monitorPins.Length pins · send HIGH / LOW signal</span>
         </div>
         <div class="pk-card-body">
             <div class="pin-grid">
                 @foreach (var pin in monitorPins)
                 {
                     var state = Model.FirstOrDefault(s => s.GpioPin == pin);
-                    <div class="pin-card">
-                        <div class="pin-info">
-                            <div class="pin-name">@(state?.StateName ?? "Unknown Zone")</div>
-                            <div class="pin-number">PIN @pin</div>
+                    <div class="pin-card" id="sim-card-@pin">
+                        <div class="pin-top">
+                            <div class="pin-name">@(state?.StateName ?? "Unknown")</div>
+                            <div class="pin-number">GPIO @pin</div>
+                        </div>
+                        <div class="pin-state-row">
+                            <div class="pin-state-dot" id="sim-dot-@pin"></div>
+                            <span class="pin-state-label" id="sim-label-@pin">— waiting</span>
                         </div>
                         <div class="btn-group">
-                            <button class="dev-btn btn-in"  onclick="triggerPin(@pin, true)">HIGH</button>
-                            <button class="dev-btn btn-out" onclick="triggerPin(@pin, false)">LOW</button>
+                            <button class="dev-btn btn-high" onclick="triggerPin(@pin, true)">
+                                <svg viewBox="0 0 12 12"><polyline points="2 8 6 4 10 8"/></svg>
+                                HIGH
+                            </button>
+                            <button class="dev-btn btn-low" onclick="triggerPin(@pin, false)">
+                                <svg viewBox="0 0 12 12"><polyline points="2 4 6 8 10 4"/></svg>
+                                LOW
+                            </button>
                         </div>
                     </div>
                 }
@@ -267,29 +428,37 @@
         <div class="pk-card">
             <div class="pk-card-head">
                 <div class="pk-card-head-left">
-                    <div class="pk-card-accent green"></div>
-                    <div class="pk-card-num">02</div>
-                    <span class="pk-card-title">GPIO Live Monitor</span>
+                    <div class="pk-card-icon blue">
+                        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <div>
+                        <div class="pk-card-title">Live Monitor</div>
+                    </div>
                 </div>
                 <span id="connection-status" class="pk-conn-badge off">Disconnected</span>
             </div>
             <div class="pk-card-body">
-                <div class="pk-gpio-monitor-grid">
+                <div class="monitor-grid">
                     @foreach (var pin in monitorPins)
                     {
-                        <div id="dev-pin-@pin" class="gpio-monitor-item">
-                            <div class="gpio-led"></div>
-                            <span class="gpio-label">PIN @pin</span>
+                        var ms = Model.FirstOrDefault(s => s.GpioPin == pin);
+                        <div id="dev-pin-@pin" class="monitor-item">
+                            <div class="monitor-led-wrap">
+                                <div class="monitor-led-ring"></div>
+                                <div class="monitor-led"></div>
+                            </div>
+                            <span class="monitor-pin">GPIO @pin</span>
+                            <span class="monitor-name">@(ms?.StateName ?? "—")</span>
                         </div>
                     }
                 </div>
-                <div class="pk-legend">
-                    <div class="pk-legend-item">
-                        <div style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.4);"></div>
-                        Active (Car detected)
+                <div class="monitor-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5);"></div>
+                        Car Detected
                     </div>
-                    <div class="pk-legend-item">
-                        <div style="width:10px;height:10px;border-radius:50%;background:#cbd5e1;"></div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:var(--ink-4);"></div>
                         Idle
                     </div>
                 </div>
@@ -300,15 +469,18 @@
         <div class="pk-card">
             <div class="pk-card-head">
                 <div class="pk-card-head-left">
-                    <div class="pk-card-accent amber"></div>
-                    <div class="pk-card-num">03</div>
-                    <span class="pk-card-title">Activity Terminal</span>
+                    <div class="pk-card-icon amber">
+                        <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    </div>
+                    <div>
+                        <div class="pk-card-title">Activity Terminal</div>
+                    </div>
                 </div>
-                <span class="pk-card-meta">Trigger log</span>
+                <span class="pk-card-meta">trigger log</span>
             </div>
-            <div class="pk-card-body">
+            <div class="pk-card-body" style="padding-bottom:16px;">
                 <div class="dev-terminal" id="terminal">
-                    <div class="log-entry boot"><span class="ts">[BOOT]</span> System ready for testing...</div>
+                    <div class="log-entry boot"><span class="ts">[BOOT]</span> System ready · waiting for signal...</div>
                 </div>
             </div>
         </div>
@@ -319,21 +491,24 @@
     <div class="pk-card">
         <div class="pk-card-head">
             <div class="pk-card-head-left">
-                <div class="pk-card-accent blue"></div>
-                <div class="pk-card-num">04</div>
-                <span class="pk-card-title">Raw GPIO Readings</span>
+                <div class="pk-card-icon purple">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div>
+                    <div class="pk-card-title">Raw GPIO Readings</div>
+                </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
-                <span class="pk-card-meta">Live · updates every ~1s</span>
+                <span class="pk-card-meta">live · ~1s refresh</span>
                 <span id="raw-badge" class="pk-conn-badge off">Waiting...</span>
             </div>
         </div>
         <div class="pk-card-body" style="padding:0;">
+            <div class="raw-table-wrap">
             <table class="raw-table">
                 <thead>
                     <tr>
-                        <th>PIN</th>
-                        <th>State Name</th>
+                        <th>Pin / Name</th>
                         <th>Raw Value</th>
                         <th>Idle Baseline</th>
                         <th>Status</th>
@@ -341,22 +516,26 @@
                         <th>Config Baseline</th>
                     </tr>
                 </thead>
-                <tbody id="raw-tbody">
+                <tbody>
                     @foreach (var pin in monitorPins)
                     {
                         var s = Model.FirstOrDefault(x => x.GpioPin == pin);
                         <tr id="raw-row-@pin">
-                            <td style="font-weight:700;color:var(--blue);">@pin</td>
-                            <td style="color:var(--ink-2);">@(s?.StateName ?? "—")</td>
-                            <td id="raw-val-@pin"><span class="raw-val" style="color:var(--ink-4);">— waiting</span></td>
-                            <td id="raw-idle-@pin"><span style="color:var(--ink-4);font-size:12px;">— waiting</span></td>
+                            <td>
+                                <div class="raw-pin-cell">
+                                    <span class="raw-pin-num">@pin</span>
+                                    <span class="raw-pin-name">@(s?.StateName ?? "—")</span>
+                                </div>
+                            </td>
+                            <td id="raw-val-@pin"><span class="raw-val waiting">— waiting</span></td>
+                            <td id="raw-idle-@pin"><span class="raw-val waiting">— waiting</span></td>
                             <td id="raw-status-@pin"><span class="raw-status not-trigger">—</span></td>
                             <td id="raw-hint-@pin"></td>
                             <td>
                                 <div class="cfg-btn-wrap">
-                                    <button class="cfg-btn set-high" onclick="setBaseline(@pin, true)"  title="ตั้ง idle = HIGH (signal ปกติของขานี้คือ 1)">Idle = HIGH</button>
-                                    <button class="cfg-btn set-low"  onclick="setBaseline(@pin, false)" title="ตั้ง idle = LOW (signal ปกติของขานี้คือ 0)">Idle = LOW</button>
-                                    <button class="cfg-btn set-auto" id="cfg-auto-@pin" onclick="clearBaseline(@pin)" title="ล้าง override กลับไปใช้ค่า startup" style="display:none;">↺ Auto</button>
+                                    <button class="cfg-btn set-high" onclick="setBaseline(@pin, true)"  title="ตั้ง idle = HIGH">Idle = HIGH</button>
+                                    <button class="cfg-btn set-low"  onclick="setBaseline(@pin, false)" title="ตั้ง idle = LOW">Idle = LOW</button>
+                                    <button class="cfg-btn set-auto" id="cfg-auto-@pin" onclick="clearBaseline(@pin)" title="ล้าง override" style="display:none;">↺ Auto</button>
                                     <span class="cfg-manual-badge" id="cfg-badge-@pin" style="display:none;">MANUAL</span>
                                 </div>
                             </td>
@@ -364,6 +543,7 @@
                     }
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -371,9 +551,9 @@
     <div class="pk-footer-bar">
         <div class="pk-footer-meta">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Session started &middot; @DateTime.Now.ToString("dd MMM yyyy, HH:mm")
+            Session · @DateTime.Now.ToString("dd MMM yyyy HH:mm")
         </div>
-        <a asp-action="Index" class="btn-pk-secondary">
+        <a asp-action="Index" class="btn-back">
             <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
             Back to Admin Panel
         </a>
@@ -386,29 +566,37 @@
     // ── GPIO Simulation ──
     async function triggerPin(pin, isActive) {
         const terminal = document.getElementById('terminal');
-        const time = new Date().toLocaleTimeString();
-        const action = isActive ? "HIGH" : "LOW";
+        const time     = new Date().toLocaleTimeString();
+        const sigLabel = isActive ? 'HIGH' : 'LOW';
+        const sigColor = isActive ? '#16a34a' : '#dc2626';
+
+        // update sim card dot
+        const dot   = document.getElementById('sim-dot-' + pin);
+        const label = document.getElementById('sim-label-' + pin);
+        if (dot)   { dot.className = 'pin-state-dot ' + (isActive ? 'is-high' : 'is-low'); }
+        if (label) { label.textContent = sigLabel; label.style.color = sigColor; }
 
         try {
             const response = await fetch(`/Admin/ManualTrigger?pin=${pin}&isActive=${isActive}`, { method: 'POST' });
-            if (response.ok) {
-                const log = document.createElement('div');
-                log.className = 'log-entry';
-                log.innerHTML = `<span class="ts">[${time}]</span> PIN ${pin} → ${action} | Syncing with Kiosk...`;
-                terminal.prepend(log);
+            const data = response.ok ? await response.json() : null;
+
+            const log = document.createElement('div');
+            log.className = response.ok ? 'log-entry' : 'log-entry err';
+            if (response.ok && data) {
+                const carStatus = data.hasCar
+                    ? `<span style="color:#16a34a;font-weight:700;">CAR DETECTED</span>`
+                    : `<span style="color:#64748b;">Idle</span>`;
+                log.innerHTML = `<span class="ts">[${time}]</span> GPIO <span style="color:#2563eb;">${pin}</span> → <span style="color:${sigColor};font-weight:700;">${sigLabel}</span> · ${carStatus}`;
             } else {
-                const log = document.createElement('div');
-                log.className = 'log-entry';
-                log.style.borderLeftColor = '#ef4444';
-                log.innerHTML = `<span class="ts">[${time}]</span> ❌ PIN ${pin} trigger FAILED`;
-                terminal.prepend(log);
+                log.innerHTML = `<span class="ts">[${time}]</span> ❌ GPIO ${pin} trigger FAILED`;
             }
+            terminal.prepend(log);
         } catch (err) {
             console.error("Trigger failed", err);
         }
     }
 
-    // ── GPIO Live Monitor (SignalR) ──
+    // ── SignalR ──
     const statusBadge = document.getElementById('connection-status');
 
     const devConnection = new signalR.HubConnectionBuilder()
@@ -417,7 +605,7 @@
         .build();
 
     devConnection.on("ReceiveStatus", (imagePath, hasCar, activePin) => {
-        document.querySelectorAll('.gpio-monitor-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.monitor-item').forEach(el => el.classList.remove('active'));
         if (hasCar && activePin !== -1) {
             document.getElementById('dev-pin-' + activePin)?.classList.add('active');
         }
@@ -425,51 +613,46 @@
 
     // ── Raw GPIO Readings ──
     devConnection.on("RawPinValues", (pins) => {
-        const rawBadge = document.getElementById('raw-badge');
-        rawBadge.textContent = 'Live';
-        rawBadge.className = 'pk-conn-badge live';
+        document.getElementById('raw-badge').textContent = 'Live';
+        document.getElementById('raw-badge').className   = 'pk-conn-badge live';
 
         pins.forEach(({ pin, isHigh, idleIsHigh, isManual }) => {
             // Raw value
             const valCell = document.getElementById('raw-val-' + pin);
-            if (valCell) {
-                valCell.innerHTML = isHigh
-                    ? `<span class="raw-val is-high"><span class="dot"></span>1 — HIGH</span>`
-                    : `<span class="raw-val is-low"><span class="dot"></span>0 — LOW</span>`;
-            }
+            if (valCell) valCell.innerHTML = isHigh
+                ? `<span class="raw-val is-high"><span class="dot"></span>1 · HIGH</span>`
+                : `<span class="raw-val is-low"><span class="dot"></span>0 · LOW</span>`;
 
-            // Idle baseline + MANUAL badge
+            // Idle baseline
             const idleCell = document.getElementById('raw-idle-' + pin);
             if (idleCell) {
-                const manualTag = isManual ? ` <span class="cfg-manual-badge">MANUAL</span>` : '';
+                const badge = isManual ? ` <span class="cfg-manual-badge">MANUAL</span>` : '';
                 idleCell.innerHTML = idleIsHigh
-                    ? `<span class="raw-val is-high" style="font-size:11px;"><span class="dot"></span>HIGH</span>${manualTag}`
-                    : `<span class="raw-val is-low"  style="font-size:11px;"><span class="dot"></span>LOW</span>${manualTag}`;
+                    ? `<span class="raw-val is-high" style="font-size:11px;"><span class="dot"></span>HIGH</span>${badge}`
+                    : `<span class="raw-val is-low"  style="font-size:11px;"><span class="dot"></span>LOW</span>${badge}`;
             }
 
-            // แสดง ↺ Auto เมื่อมี manual override
+            // Auto button visibility
             const autoBtn = document.getElementById('cfg-auto-' + pin);
             if (autoBtn) autoBtn.style.display = isManual ? 'inline-flex' : 'none';
 
-            // triggered = ค่าปัจจุบัน ≠ baseline
-            const isTriggeringNow = isHigh !== idleIsHigh;
+            // Status
+            const triggered = isHigh !== idleIsHigh;
             const statusCell = document.getElementById('raw-status-' + pin);
-            if (statusCell) {
-                statusCell.innerHTML = isTriggeringNow
-                    ? `<span class="raw-status triggering">🚗 CAR DETECTED</span>`
-                    : `<span class="raw-status not-trigger">Idle</span>`;
-            }
+            if (statusCell) statusCell.innerHTML = triggered
+                ? `<span class="raw-status triggering">● CAR</span>`
+                : `<span class="raw-status not-trigger">○ Idle</span>`;
 
             // Suggestion
             const hintCell = document.getElementById('raw-hint-' + pin);
             if (hintCell) {
                 const triggerOn = idleIsHigh ? 'LOW' : 'HIGH';
-                hintCell.innerHTML = `<span class="raw-hint">⚑ Idle=${idleIsHigh ? 'HIGH' : 'LOW'} → trigger on ${triggerOn}</span>`;
+                hintCell.innerHTML = `<span class="raw-hint">idle=${idleIsHigh?'HIGH':'LOW'} → fires on ${triggerOn}</span>`;
             }
 
-            // Row highlight when triggering
+            // Row highlight
             const row = document.getElementById('raw-row-' + pin);
-            if (row) row.className = isTriggeringNow ? 'row-warning' : '';
+            if (row) row.className = triggered ? 'row-active' : '';
         });
     });
 
@@ -477,26 +660,23 @@
     async function setBaseline(pin, idleIsHigh) {
         const res = await fetch(`/Admin/SetBaseline?pin=${pin}&idleIsHigh=${idleIsHigh}`, { method: 'POST' });
         if (!res.ok) { alert('Failed to set baseline'); return; }
-
-        // log to terminal
         const time = new Date().toLocaleTimeString();
         const sig  = idleIsHigh ? 'HIGH' : 'LOW';
-        const sigColor = idleIsHigh ? '#4ade80' : '#f87171';
-        const log = document.createElement('div');
+        const sc   = idleIsHigh ? '#16a34a' : '#dc2626';
+        const log  = document.createElement('div');
         log.className = 'log-entry';
-        log.innerHTML = `<span class="ts">[${time}]</span> PIN ${pin} → Idle baseline set to <span style="color:${sigColor};font-weight:700;">${sig}</span> (MANUAL)`;
+        log.innerHTML = `<span class="ts">[${time}]</span> GPIO <span style="color:#2563eb;">${pin}</span> · Idle baseline → <span style="color:${sc};font-weight:700;">${sig}</span> <span class="cfg-manual-badge">MANUAL</span>`;
         document.getElementById('terminal').prepend(log);
     }
 
     async function clearBaseline(pin) {
         const res = await fetch(`/Admin/ClearBaseline?pin=${pin}`, { method: 'POST' });
         if (!res.ok) { alert('Failed to clear baseline'); return; }
-
         const time = new Date().toLocaleTimeString();
-        const log = document.createElement('div');
+        const log  = document.createElement('div');
         log.className = 'log-entry';
-        log.style.borderLeftColor = '#94a3b8';
-        log.innerHTML = `<span class="ts">[${time}]</span> PIN ${pin} → Baseline cleared, back to auto-detect`;
+        log.style.borderLeftColor = '#cbd5e1';
+        log.innerHTML = `<span class="ts">[${time}]</span> GPIO <span style="color:#2563eb;">${pin}</span> · Baseline cleared → auto-detect`;
         document.getElementById('terminal').prepend(log);
     }
 
@@ -504,7 +684,7 @@
         try {
             await devConnection.start();
             statusBadge.textContent = 'Live';
-            statusBadge.className = 'pk-conn-badge live';
+            statusBadge.className   = 'pk-conn-badge live';
         } catch {
             setTimeout(startDevSignalR, 2000);
         }
