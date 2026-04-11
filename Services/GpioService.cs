@@ -32,10 +32,22 @@ public class GpioService : IHostedService
             _gpio.OpenPin(pin, PinMode.InputPullDown);
         }
 
-        // อ่านค่า raw ตอนเริ่มต้น → ส่งให้ GpioBaselineService เก็บเป็น startup baseline
+        // อ่านค่า raw ตอนเริ่มต้น → เก็บเป็น startup baseline
         foreach (var pin in _pins)
         {
             _baseline.SetStartupBaseline(pin, _gpio.Read(pin) == PinValue.High);
+        }
+
+        // โหลด manual override ที่บันทึกไว้ใน DB กลับมา (ข้ามรีบูต)
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            foreach (var pin in _pins)
+            {
+                var state = db.ParkingStates.FirstOrDefault(s => s.GpioPin == pin);
+                if (state?.IdleBaseline.HasValue == true)
+                    _baseline.SetManualBaseline(pin, state.IdleBaseline.Value);
+            }
         }
 
         Task.Run(() => ListenToGpio(cancellationToken));

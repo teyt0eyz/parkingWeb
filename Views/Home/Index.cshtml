@@ -101,10 +101,10 @@
             .then(data => { idleVid.muted = data.muted; });
     }, { once: true });
 
-    // โหลดการหมุนหน้าจอที่เคยเซฟไว้
+    // โหลดการหมุนหน้าจอจาก server (จำข้ามรีบูต)
     (function initRotation() {
-        const saved = localStorage.getItem('screenRotation') || '0';
-        if (saved !== '0') document.body.classList.add('rotate-' + saved);
+        const degree = @ViewBag.ScreenRotation;
+        if (degree !== 0) document.body.classList.add('rotate-' + degree);
     })();
 
     const connection = new signalR.HubConnectionBuilder()
@@ -147,7 +147,6 @@
         console.log("🔄 Rotating Screen to:", degree);
         document.body.classList.remove('rotate-0', 'rotate-90', 'rotate-180', 'rotate-270');
         if (degree !== 0) document.body.classList.add('rotate-' + degree);
-        localStorage.setItem('screenRotation', degree);
     });
 
     async function startConnection() {

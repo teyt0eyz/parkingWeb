@@ -6,5 +6,6 @@ public class ParkingState
     public string StateName { get; set; } = ""; // เช่น "ถอยหลัง", "หยุด"
     public string ImagePath { get; set; } = ""; // ชื่อไฟล์รูปภาพ
     public int GpioPin { get; set; }            // เลขขาบน Pi (17, 27...)
-    public bool TriggerOnHigh { get; set; } = true; // true = trigger เมื่อสัญญาณ High, false = trigger เมื่อสัญญาณ Low
+    public bool TriggerOnHigh { get; set; } = true;
+    public bool? IdleBaseline { get; set; } = null; // null = ใช้ auto-detect, true/false = manual override ที่บันทึกไว้
 }

@@ -46,6 +46,10 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     context.Database.EnsureCreated(); // สร้างไฟล์ .db อัตโนมัติถ้ายังไม่มี
 
+    // เพิ่มคอลัมน์ IdleBaseline ถ้ายังไม่มี (สำหรับ DB เก่าที่สร้างก่อน)
+    try { context.Database.ExecuteSqlRaw("ALTER TABLE ParkingStates ADD COLUMN IdleBaseline INTEGER"); }
+    catch { /* คอลัมน์มีอยู่แล้ว */ }
+
     if (!context.ParkingStates.Any())
     {
         context.ParkingStates.AddRange(

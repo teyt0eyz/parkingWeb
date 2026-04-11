@@ -25,6 +25,14 @@ public class HomeController : Controller
         string videoPath = Path.Combine(_environment.WebRootPath, "videos", "idle.mp4");
         ViewBag.HasVideo = System.IO.File.Exists(videoPath);
 
+        // อ่านค่าหมุนหน้าจอที่บันทึกไว้ฝั่ง server
+        int rotation = 0;
+        string rotFile = Path.Combine(_environment.ContentRootPath, "rotation.dat");
+        if (System.IO.File.Exists(rotFile) &&
+            int.TryParse(System.IO.File.ReadAllText(rotFile).Trim(), out int saved))
+            rotation = saved;
+        ViewBag.ScreenRotation = rotation;
+
         return View();
     }
 

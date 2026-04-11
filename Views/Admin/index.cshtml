@@ -694,10 +694,7 @@
     }
 
     function applyKioskRotation() {
-        // 1. บันทึกไว้ในเครื่องตัวเองก่อน
-        localStorage.setItem('screenRotation', currentDeg);
-        
-        // 2. 🚀 ส่งคำสั่งไปที่ Server เพื่อให้ Server บอก Kiosk ให้หมุน (สำคัญมาก!)
+        // ส่งคำสั่งไปที่ Server — server บันทึกลงไฟล์ + broadcast SignalR ไป Kiosk
         fetch(`/Admin/SaveRotation?degree=${currentDeg}`, { method: 'POST' })
             .then(response => {
                 if (response.ok) {
@@ -711,9 +708,9 @@
             });
     }
 
-    // Restore saved rotation on load
+    // Restore saved rotation on load (อ่านจาก server ไม่ใช่ localStorage)
     (function () {
-        const saved = parseInt(localStorage.getItem('screenRotation') || '0');
+        const saved = @ViewBag.ScreenRotation;
         const btn   = document.querySelector(`.pk-rot-btn[data-deg="${saved}"]`);
         if (btn) selectRot(btn);
     })();

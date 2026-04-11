@@ -77,6 +77,14 @@ public class AdminController : Controller
             ViewBag.LogUsedPct   = "0.00";
         }
 
+        // อ่านค่าหมุนหน้าจอที่บันทึกไว้
+        int rotation = 0;
+        string rotFile = Path.Combine(_env.ContentRootPath, "rotation.dat");
+        if (System.IO.File.Exists(rotFile) &&
+            int.TryParse(System.IO.File.ReadAllText(rotFile).Trim(), out int savedRot))
+            rotation = savedRot;
+        ViewBag.ScreenRotation = rotation;
+
         var states = _db.ParkingStates.ToList();
         return View(states);
     }
@@ -133,19 +141,35 @@ public class AdminController : Controller
         return RedirectToAction("Index");
     }
 
-    // 3b. ตั้งค่า idle baseline ของ pin แบบ manual (override auto-detect)
+    // 3b. ตั้งค่า idle baseline ของ pin แบบ manual (override auto-detect) + บันทึกลง DB
     [HttpPost]
     public IActionResult SetBaseline(int pin, bool idleIsHigh)
     {
         _baselineSvc.SetManualBaseline(pin, idleIsHigh);
+
+        var state = _db.ParkingStates.FirstOrDefault(s => s.GpioPin == pin);
+        if (state != null)
+        {
+            state.IdleBaseline = idleIsHigh;
+            _db.SaveChanges();
+        }
+
         return Ok(new { pin, idleIsHigh });
     }
 
-    // 3c. ล้าง manual override กลับไปใช้ค่า startup
+    // 3c. ล้าง manual override กลับไปใช้ค่า startup + ล้างจาก DB
     [HttpPost]
     public IActionResult ClearBaseline(int pin)
     {
         _baselineSvc.ClearManualBaseline(pin);
+
+        var state = _db.ParkingStates.FirstOrDefault(s => s.GpioPin == pin);
+        if (state != null)
+        {
+            state.IdleBaseline = null;
+            _db.SaveChanges();
+        }
+
         return Ok(new { pin });
     }
 
@@ -168,8 +192,23 @@ public class AdminController : Controller
     [HttpPost]
     public async Task<IActionResult> SaveRotation(int degree)
     {
+        // บันทึกลงไฟล์เพื่อให้จำข้ามรีบูต
+        string rotFile = Path.Combine(_env.ContentRootPath, "rotation.dat");
+        await System.IO.File.WriteAllTextAsync(rotFile, degree.ToString());
+
         await _hubContext.Clients.All.SendAsync("RotateScreen", degree);
         return Ok(new { degree = degree });
+    }
+
+    [HttpGet]
+    public IActionResult GetRotation()
+    {
+        string rotFile = Path.Combine(_env.ContentRootPath, "rotation.dat");
+        int degree = 0;
+        if (System.IO.File.Exists(rotFile) &&
+            int.TryParse(System.IO.File.ReadAllText(rotFile).Trim(), out int saved))
+            degree = saved;
+        return Ok(new { degree });
     }
 
     [HttpPost]
