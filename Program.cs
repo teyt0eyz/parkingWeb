@@ -51,6 +51,12 @@ app.MapControllerRoute(
     ;
 
 app.MapHub<ParkingHub>("/parkingHub");
+
+var logSvc = app.Services.GetRequiredService<LogService>();
+app.Lifetime.ApplicationStarted.Register(() =>
+    logSvc.SaveSystemLog("=== Application started ==="));
+app.Lifetime.ApplicationStopping.Register(() =>
+    logSvc.SaveSystemLog("=== Application stopping ==="));
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

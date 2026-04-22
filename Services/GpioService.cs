@@ -33,18 +33,23 @@ public class GpioService : IHostedService
     {
         if (!_hasGpio)
         {
-            // ไม่ใช่ Linux (Pi) — ข้าม GPIO ทั้งหมด เว็บยังใช้งานได้ปกติ
+            _logService.SaveSystemLog("GpioService started (non-Linux — GPIO skipped)");
             return Task.CompletedTask;
         }
 
         foreach (var pin in _pins)
             _gpio!.OpenPin(pin, PinMode.InputPullDown);
 
-        // อ่านค่า raw ตอนเริ่มต้น → เก็บเป็น startup baseline
+        var startupBaselines = new List<string>();
         foreach (var pin in _pins)
-            _baseline.SetStartupBaseline(pin, _gpio!.Read(pin) == PinValue.High);
+        {
+            bool isHigh = _gpio!.Read(pin) == PinValue.High;
+            _baseline.SetStartupBaseline(pin, isHigh);
+            startupBaselines.Add($"Pin{pin}={( isHigh ? "H" : "L")}");
+        }
+        _logService.SaveSystemLog($"GpioService started — pins: {string.Join(", ", _pins)} | startup baseline: {string.Join(", ", startupBaselines)}");
 
-        // โหลด manual override ที่บันทึกไว้ใน DB กลับมา (ข้ามรีบูต)
+        int manualCount = 0;
         using (var scope = _scopeFactory.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -52,7 +57,11 @@ public class GpioService : IHostedService
             {
                 var state = db.ParkingStates.FirstOrDefault(s => s.GpioPin == pin);
                 if (state?.IdleBaseline.HasValue == true)
+                {
                     _baseline.SetManualBaseline(pin, state.IdleBaseline.Value);
+                    manualCount++;
+                    _logService.SaveSystemLog($"Baseline override loaded from DB — Pin{pin}={( state.IdleBaseline.Value ? "H" : "L")}");
+                }
             }
         }
 
@@ -121,6 +130,7 @@ public class GpioService : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        _logService.SaveSystemLog("GpioService stopped");
         _gpio?.Dispose();
         return Task.CompletedTask;
     }

@@ -113,17 +113,20 @@ public class AdminController : Controller
 
         if (videoFile == null || videoFile.Length == 0)
         {
+            _logger.SaveSystemLog("Video upload rejected — no file");
             TempData["UploadError"] = "กรุณาเลือกไฟล์วิดีโอ";
             return RedirectToAction("Index");
         }
         if (videoFile.Length > maxVideoBytes)
         {
+            _logger.SaveSystemLog($"Video upload rejected — file too large: {videoFile.Length / 1024 / 1024} MB (limit: {maxVideoBytes / 1024 / 1024} MB)");
             TempData["UploadError"] = $"ไฟล์วิดีโอใหญ่เกินขนาดที่อนุญาต (ขนาดไฟล์: {videoFile.Length / 1024 / 1024} MB)";
             return RedirectToAction("Index");
         }
         var allowedVideoTypes = new[] { "video/mp4", "video/mpeg" };
         if (!allowedVideoTypes.Contains(videoFile.ContentType.ToLower()))
         {
+            _logger.SaveSystemLog($"Video upload rejected — invalid type: {videoFile.ContentType}");
             TempData["UploadError"] = "รองรับเฉพาะไฟล์ MP4 เท่านั้น";
             return RedirectToAction("Index");
         }
@@ -137,6 +140,7 @@ public class AdminController : Controller
             await videoFile.CopyToAsync(stream);
         }
 
+        _logger.SaveSystemLog($"Idle video updated — size: {videoFile.Length / 1024 / 1024} MB, file: {videoFile.FileName}");
         await _hubContext.Clients.All.SendAsync("ReloadPage");
         return RedirectToAction("Index");
     }
@@ -186,6 +190,7 @@ public class AdminController : Controller
 
         state.ImagePath = fileName;
         _db.SaveChanges();
+        _logger.SaveSystemLog($"State image updated — GPIO Pin {state.GpioPin}, file: {imageFile.FileName} ({imageFile.Length / 1024} KB)");
         return RedirectToAction("Index");
     }
 
@@ -202,6 +207,7 @@ public class AdminController : Controller
             _db.SaveChanges();
         }
 
+        _logger.SaveSystemLog($"GPIO baseline set manually — Pin{pin} idle={(idleIsHigh ? "HIGH" : "LOW")}");
         return Ok(new { pin, idleIsHigh });
     }
 
@@ -218,6 +224,7 @@ public class AdminController : Controller
             _db.SaveChanges();
         }
 
+        _logger.SaveSystemLog($"GPIO baseline cleared — Pin{pin} returned to auto-detect");
         return Ok(new { pin });
     }
 
@@ -244,6 +251,7 @@ public class AdminController : Controller
         string rotFile = Path.Combine(_env.ContentRootPath, "rotation.dat");
         await System.IO.File.WriteAllTextAsync(rotFile, degree.ToString());
 
+        _logger.SaveSystemLog($"Screen rotation set to {degree}°");
         await _hubContext.Clients.All.SendAsync("RotateScreen", degree);
         return Ok(new { degree = degree });
     }
@@ -263,6 +271,7 @@ public class AdminController : Controller
     public async Task<IActionResult> SetMute(bool muted)
     {
         _kioskMuted = muted;
+        _logger.SaveSystemLog($"Kiosk mute set to {muted}");
         await _hubContext.Clients.All.SendAsync("SetMute", muted);
         return Ok(new { muted = muted });
     }
