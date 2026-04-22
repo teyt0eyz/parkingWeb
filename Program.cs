@@ -14,14 +14,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 
-// จำกัด request body สูงสุด 210 MB (ครอบ video 200 MB + overhead)
+// ไม่จำกัด request size ที่ระดับ Kestrel — ให้ controller ตรวจสอบเองตาม free disk
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
 {
-    o.MultipartBodyLengthLimit = 210L * 1024 * 1024;
+    o.MultipartBodyLengthLimit = long.MaxValue;
 });
 builder.WebHost.ConfigureKestrel(k =>
 {
-    k.Limits.MaxRequestBodySize = 210L * 1024 * 1024;
+    k.Limits.MaxRequestBodySize = null; // null = unlimited
 });
 builder.Services.AddHostedService<GpioService>();
 builder.Services.AddSingleton<ParkingWeb.Services.LogService>();
@@ -56,9 +56,12 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     context.Database.EnsureCreated(); // สร้างไฟล์ .db อัตโนมัติถ้ายังไม่มี
 
-    // เพิ่มคอลัมน์ IdleBaseline ถ้ายังไม่มี (สำหรับ DB เก่าที่สร้างก่อน)
-    try { context.Database.ExecuteSqlRaw("ALTER TABLE ParkingStates ADD COLUMN IdleBaseline INTEGER"); }
-    catch { /* คอลัมน์มีอยู่แล้ว */ }
+    // เพิ่มคอลัมน์ IdleBaseline ถ้ายังไม่มี (ไม่ใช้ try-catch เพื่อหลีกเลี่ยง EF Core log noise)
+    var columns = context.Database
+        .SqlQueryRaw<string>("SELECT name FROM pragma_table_info('ParkingStates')")
+        .ToList();
+    if (!columns.Contains("IdleBaseline"))
+        context.Database.ExecuteSqlRaw("ALTER TABLE ParkingStates ADD COLUMN IdleBaseline INTEGER");
 
     if (!context.ParkingStates.Any())
     {

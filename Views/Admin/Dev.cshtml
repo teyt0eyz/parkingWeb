@@ -399,7 +399,6 @@ body {
                     var state = Model.FirstOrDefault(s => s.GpioPin == pin);
                     <div class="pin-card" id="sim-card-@pin">
                         <div class="pin-top">
-                            <div class="pin-name">@(state?.StateName ?? "Unknown")</div>
                             <div class="pin-number">GPIO @pin</div>
                         </div>
                         <div class="pin-state-row">
@@ -448,7 +447,7 @@ body {
                                 <div class="monitor-led"></div>
                             </div>
                             <span class="monitor-pin">GPIO @pin</span>
-                            <span class="monitor-name">@(ms?.StateName ?? "—")</span>
+                            <span class="monitor-name">GPIO @pin</span>
                         </div>
                     }
                 </div>
@@ -524,7 +523,6 @@ body {
                             <td>
                                 <div class="raw-pin-cell">
                                     <span class="raw-pin-num">@pin</span>
-                                    <span class="raw-pin-name">@(s?.StateName ?? "—")</span>
                                 </div>
                             </td>
                             <td id="raw-val-@pin"><span class="raw-val waiting">— waiting</span></td>

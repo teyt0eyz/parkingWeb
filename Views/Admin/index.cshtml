@@ -431,7 +431,7 @@
                     <div class="pk-card-num">01</div>
                     <span class="pk-card-title">Idle State Video</span>
                 </div>
-                <span class="pk-card-meta">MP4 · max 200 MB</span>
+                <span class="pk-card-meta">MP4</span>
             </div>
             <div class="pk-card-body">
                 <div class="pk-vbox">
@@ -573,13 +573,12 @@
                     <img src="/uploads/@item.ImagePath" class="pk-thumb"
                          onerror="this.src='https://placehold.co/44x44/F3F4F6/9CA3AF?text=?'" />
                     <div>
-                        <div class="pk-gpio-name">@item.StateName</div>
                         <div class="pk-gpio-pin">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="3"/>
                                 <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
                             </svg>
-                            GPIO PIN @item.GpioPin
+                            GPIO @item.GpioPin
                         </div>
                     </div>
                     <div class="pk-gpio-actions">
@@ -665,7 +664,7 @@
     }
 
     // ── Upload validation ──
-    const MAX_VIDEO_MB = 200;
+    const MAX_VIDEO_BYTES = @ViewBag.MaxVideoBytes;
     const MAX_IMAGE_MB = 10;
 
     function showUploadError(msg) {
@@ -689,8 +688,8 @@
             showUploadError('รองรับเฉพาะไฟล์ MP4 เท่านั้น');
             return false;
         }
-        if (mb > MAX_VIDEO_MB) {
-            showUploadError(`ไฟล์วิดีโอใหญ่เกิน ${MAX_VIDEO_MB} MB (ขนาดไฟล์: ${mb.toFixed(1)} MB)`);
+        if (file.size > MAX_VIDEO_BYTES) {
+            showUploadError(`ไฟล์วิดีโอใหญ่เกินขนาดที่อนุญาต (ขนาดไฟล์: ${(file.size/1024/1024).toFixed(1)} MB)`);
             return false;
         }
         return true;

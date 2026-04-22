@@ -34,7 +34,7 @@ public class AdminController : Controller
         try
         {
             // เช็ค OS: ถ้าเป็น Linux (Pi) ให้ดูที่ "/" ถ้าเป็น Windows ให้ดูที่ Drive "C"
-            string drivePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "/" : "C";
+            string drivePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "C" : "/";
             var drive = new DriveInfo(drivePath);
 
             double totalSize = drive.TotalSize;
@@ -85,6 +85,15 @@ public class AdminController : Controller
             rotation = savedRot;
         ViewBag.ScreenRotation = rotation;
 
+        // จำกัด video upload = ครึ่งหนึ่งของพื้นที่ว่าง (หน่วย bytes ส่งไป JS)
+        try
+        {
+            string drivePath2 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "C" : "/";
+            long freeBytes = new DriveInfo(drivePath2).AvailableFreeSpace;
+            ViewBag.MaxVideoBytes = freeBytes / 2;
+        }
+        catch { ViewBag.MaxVideoBytes = 200L * 1024 * 1024; }
+
         var states = _db.ParkingStates.ToList();
         return View(states);
     }
@@ -93,16 +102,23 @@ public class AdminController : Controller
     [HttpPost]
     public async Task<IActionResult> UpdateIdleVideo(IFormFile videoFile)
     {
-        const long MaxVideoBytes = 200L * 1024 * 1024; // 200 MB
+        // จำกัด = ครึ่งหนึ่งของพื้นที่ว่างตอนนี้
+        long maxVideoBytes;
+        try
+        {
+            string dp = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "C" : "/";
+            maxVideoBytes = new DriveInfo(dp).AvailableFreeSpace / 2;
+        }
+        catch { maxVideoBytes = 200L * 1024 * 1024; }
 
         if (videoFile == null || videoFile.Length == 0)
         {
             TempData["UploadError"] = "กรุณาเลือกไฟล์วิดีโอ";
             return RedirectToAction("Index");
         }
-        if (videoFile.Length > MaxVideoBytes)
+        if (videoFile.Length > maxVideoBytes)
         {
-            TempData["UploadError"] = $"ไฟล์วิดีโอใหญ่เกิน 200 MB (ขนาดไฟล์: {videoFile.Length / 1024 / 1024} MB)";
+            TempData["UploadError"] = $"ไฟล์วิดีโอใหญ่เกินขนาดที่อนุญาต (ขนาดไฟล์: {videoFile.Length / 1024 / 1024} MB)";
             return RedirectToAction("Index");
         }
         var allowedVideoTypes = new[] { "video/mp4", "video/mpeg" };
@@ -271,7 +287,7 @@ public class AdminController : Controller
         ViewBag.TotalLogSize = totalLogMB.ToString("F2");
 
         // 2. คำนวณพื้นที่ SD Card ทั้งหมด
-        string drivePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "/" : "C";
+        string drivePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "C" : "/";
         var drive = new DriveInfo(drivePath);
         double totalDriveGB = drive.TotalSize / (1024.0 * 1024.0 * 1024.0);
         double freeSpaceGB  = drive.AvailableFreeSpace / (1024.0 * 1024.0 * 1024.0);
