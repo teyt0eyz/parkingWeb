@@ -1,4 +1,4 @@
-﻿@{ Layout = null; }
+@{ Layout = null; }
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,65 +6,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parking NetVision Kiosk</title>
     <style>
-        /* จัดหน้าจอให้เต็ม และพื้นหลังดำสนิท */
-        body, html { 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100%; 
-            background-color: black; 
-            overflow: hidden; 
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: #000; overflow: hidden;
         }
 
-        #display-container { 
-            position: relative; 
-            width: 100vw; 
-            height: 100vh; 
-        }
-        
-        #guideImage { 
-            position: absolute; 
-            top: 0; 
-            left: 0;
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-            display: none; /* รูปรถยังคงซ่อนไว้ก่อน */
-            transform: translateZ(0); 
-            will-change: transform, opacity;
+        #display-container {
+            position: relative; width: 100vw; height: 100vh;
         }
 
-        #idleVideo { 
-            position: absolute; 
-            top: 0; 
-            left: 0;
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-            display: block; /* โชว์ทันทีที่โหลดหน้าเว็บ */
-            transform: translateZ(0); 
-            will-change: transform, opacity;
+        #idleVideo {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: contain; display: block;
+            transform: translateZ(0); will-change: transform;
         }
+
+        #guideImage {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: contain; display: none;
+            transform: translateZ(0); will-change: transform;
+        }
+
+        /* ── Buffer overlay ── */
+        #bufferOverlay {
+            position: fixed; inset: 0;
+            background: #000;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 999;
+            transition: opacity 0.5s ease;
+        }
+        #bufferBox {
+            text-align: center;
+            width: 340px; max-width: 80vw;
+        }
+        #bufferTitle {
+            font-family: -apple-system, 'Segoe UI', sans-serif;
+            font-size: 1rem; font-weight: 500;
+            color: #94a3b8; margin-bottom: 22px;
+            letter-spacing: 0.06em;
+        }
+        #bufferTrack {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 99px;
+            height: 6px; overflow: hidden;
+        }
+        #bufferFill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #2563eb, #60a5fa);
+            border-radius: 99px;
+            transition: width 0.15s ease;
+        }
+        #bufferPct {
+            font-family: 'Courier New', monospace;
+            font-size: 0.78rem; color: #475569;
+            margin-top: 12px;
+        }
+
+        /* ── Debug panel ── */
+        #dbg {
+            position: fixed; bottom: 12px; left: 12px;
+            background: rgba(0,0,0,0.82);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px 14px;
+            z-index: 1000;
+            font-family: 'Courier New', monospace;
+            font-size: 11px; color: #94a3b8;
+            min-width: 260px; max-width: 340px;
+            line-height: 1.7;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+        }
+        #dbg .dbg-row { display: flex; justify-content: space-between; gap: 12px; }
+        #dbg .dbg-key { color: #64748b; }
+        #dbg .dbg-val { color: #e2e8f0; font-weight: 600; }
+        #dbg .dbg-val.ok   { color: #4ade80; }
+        #dbg .dbg-val.warn { color: #facc15; }
+        #dbg .dbg-val.err  { color: #f87171; }
+        #dbg-log {
+            margin-top: 8px; border-top: 1px solid #1e293b;
+            padding-top: 6px; max-height: 90px; overflow: hidden;
+            display: flex; flex-direction: column-reverse;
+        }
+        #dbg-log div { color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #dbg-log div.new { color: #93c5fd; }
+
+        /* ── No-video message ── */
+        #noVideoMsg {
+            display: none;
+            position: absolute; inset: 0;
+            align-items: center; justify-content: center;
+        }
+        #noVideoMsg span {
+            color: #fff; font-size: 2rem;
+            font-family: sans-serif; text-align: center;
+        }
+
+        /* ── Rotation ── */
         body.rotate-90 #display-container {
-        transform: rotate(90deg);
-        transform-origin: center;
-        width: 100vh;
-        height: 100vw;
-        margin-left: calc((100vw - 100vh) / 2);
-        margin-top: calc((100vh - 100vw) / 2);
+            transform: rotate(90deg); transform-origin: center;
+            width: 100vh; height: 100vw;
+            margin-left: calc((100vw - 100vh) / 2);
+            margin-top: calc((100vh - 100vw) / 2);
         }
-
-        /* หมุน 180 องศา (กลับหัว) */
-        body.rotate-180 #display-container { 
-            transform: rotate(180deg); 
+        body.rotate-180 #display-container {
+            transform: rotate(180deg);
         }
-
-        /* หมุน 270 องศา (แนวตั้งอีกด้าน) */
         body.rotate-270 #display-container {
-            transform: rotate(270deg);
-            transform-origin: center;
-            width: 100vh;
-            height: 100vw;
+            transform: rotate(270deg); transform-origin: center;
+            width: 100vh; height: 100vw;
             margin-left: calc((100vw - 100vh) / 2);
             margin-top: calc((100vh - 100vw) / 2);
         }
@@ -72,90 +126,246 @@
 </head>
 <body>
 
-<div id="display-container">
-    @if (ViewBag.HasVideo == true)
-    {
-        <video id="idleVideo" src="/videos/idle.mp4" autoplay loop muted playsinline></video>
-    }
-    else
-    {
-        <div id="noVideoMessage" style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-            <span style="color:white;font-size:2rem;font-family:sans-serif;text-align:center;">No video uploaded yet</span>
-        </div>
-        <video id="idleVideo" src="" autoplay loop muted playsinline style="display:none;"></video>
-    }
+<!-- Buffer loading overlay -->
+<div id="bufferOverlay">
+    <div id="bufferBox">
+        <div id="bufferTitle">กำลังโหลดวิดีโอ</div>
+        <div id="bufferTrack"><div id="bufferFill"></div></div>
+        <div id="bufferPct">0%</div>
+    </div>
+</div>
 
+<!-- Debug panel -->
+<div id="dbg">
+    <div class="dbg-row"><span class="dbg-key">state</span><span class="dbg-val" id="d-state">—</span></div>
+    <div class="dbg-row"><span class="dbg-key">readyState</span><span class="dbg-val" id="d-ready">—</span></div>
+    <div class="dbg-row"><span class="dbg-key">networkState</span><span class="dbg-val" id="d-net">—</span></div>
+    <div class="dbg-row"><span class="dbg-key">currentTime</span><span class="dbg-val" id="d-time">—</span></div>
+    <div class="dbg-row"><span class="dbg-key">duration</span><span class="dbg-val" id="d-dur">—</span></div>
+    <div class="dbg-row"><span class="dbg-key">muted</span><span class="dbg-val" id="d-muted">—</span></div>
+    <div class="dbg-row"><span class="dbg-key">src</span><span class="dbg-val" id="d-src">—</span></div>
+    <div id="dbg-log"></div>
+</div>
+
+<div id="display-container">
+    <video id="idleVideo" muted loop playsinline preload="none"></video>
+    <div id="noVideoMsg"><span>No video uploaded yet</span></div>
     <img id="guideImage" src="" alt="Car Guide" />
 </div>
 
 <script src="~/js/signalr.min.js"></script>
-
 <script>
-    const idleVid = document.getElementById('idleVideo');
-    const carImg = document.getElementById('guideImage');
+    const idleVid   = document.getElementById('idleVideo');
+    const carImg    = document.getElementById('guideImage');
+    const overlay   = document.getElementById('bufferOverlay');
+    const bufFill   = document.getElementById('bufferFill');
+    const bufPct    = document.getElementById('bufferPct');
 
-    // เริ่ม muted เพื่อให้ autoplay ผ่าน แล้วเช็ค state จาก server ก่อน unmute
-    idleVid.addEventListener('playing', () => {
-        fetch('/Admin/GetMuteState')
-            .then(r => r.json())
-            .then(data => { idleVid.muted = data.muted; });
-    }, { once: true });
+    let videoReady = false;
+    let showingCar = false;
+    let blobUrl    = null;
 
-    // โหลดการหมุนหน้าจอจาก server (จำข้ามรีบูต)
-    (function initRotation() {
-        const degree = @ViewBag.ScreenRotation;
-        if (degree !== 0) document.body.classList.add('rotate-' + degree);
+    // ── Debug ──
+    const READY_LABELS = ['HAVE_NOTHING','HAVE_METADATA','HAVE_CURRENT_DATA','HAVE_FUTURE_DATA','HAVE_ENOUGH_DATA'];
+    const NET_LABELS   = ['EMPTY','IDLE','LOADING','NO_SOURCE'];
+    const logEl        = document.getElementById('dbg-log');
+    let logLines = [];
+
+    function dbgLog(msg, cls) {
+        const ts   = new Date().toLocaleTimeString('th-TH', { hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+        const line = document.createElement('div');
+        line.textContent = ts + '  ' + msg;
+        if (cls) line.className = cls;
+        logLines.unshift(line);
+        if (logLines.length > 6) logLines.pop();
+        logEl.innerHTML = '';
+        logLines.forEach(l => logEl.appendChild(l));
+        setTimeout(() => line.classList.remove('new'), 1200);
+        line.classList.add('new');
+        console.log('[VID]', msg);
+    }
+
+    function dbgUpdate() {
+        const rs   = idleVid.readyState;
+        const ns   = idleVid.networkState;
+        document.getElementById('d-state').textContent  = idleVid.paused ? 'PAUSED' : 'PLAYING';
+        document.getElementById('d-state').className    = 'dbg-val ' + (idleVid.paused ? 'warn' : 'ok');
+        document.getElementById('d-ready').textContent  = rs + ' ' + (READY_LABELS[rs] ?? '');
+        document.getElementById('d-ready').className    = 'dbg-val ' + (rs >= 3 ? 'ok' : 'warn');
+        document.getElementById('d-net').textContent    = ns + ' ' + (NET_LABELS[ns] ?? '');
+        document.getElementById('d-time').textContent   = isFinite(idleVid.currentTime) ? idleVid.currentTime.toFixed(2) + 's' : '—';
+        document.getElementById('d-dur').textContent    = isFinite(idleVid.duration) ? idleVid.duration.toFixed(2) + 's' : '—';
+        document.getElementById('d-muted').textContent  = idleVid.muted ? 'true' : 'false';
+        document.getElementById('d-src').textContent    = idleVid.src ? (idleVid.src.startsWith('blob') ? 'blob ✓' : idleVid.src.slice(-20)) : 'empty';
+    }
+
+    // ── Auto-hide / auto-show ──
+    const dbgPanel = document.getElementById('dbg');
+    let hideTimer  = null;
+
+    function dbgShow() {
+        dbgPanel.style.opacity = '1';
+        dbgPanel.style.pointerEvents = 'none';
+        clearTimeout(hideTimer);
+    }
+    function dbgScheduleHide() {
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+            dbgPanel.style.opacity = '0';
+        }, 8000); // ซ่อนหลังเล่นปกติ 8 วิ
+    }
+
+    setInterval(dbgUpdate, 500);
+
+    const PROBLEM_EVENTS = new Set(['error','stalled','waiting','pause','abort','emptied']);
+
+    ['play','playing','pause','waiting','stalled','suspend',
+     'canplay','canplaythrough','ended','error','abort','emptied'].forEach(ev => {
+        idleVid.addEventListener(ev, () => {
+            const cls = PROBLEM_EVENTS.has(ev) ? 'err'
+                      : ev === 'playing'        ? 'ok' : '';
+            dbgLog('EVENT: ' + ev.toUpperCase(), cls);
+            dbgUpdate();
+
+            if (ev === 'error') {
+                const err = idleVid.error;
+                dbgLog('ERR code=' + (err?.code) + ' msg=' + (err?.message ?? ''), 'err');
+                dbgShow(); // โชว์ค้างไว้ถ้า error
+            } else if (PROBLEM_EVENTS.has(ev)) {
+                dbgShow(); // โชว์ขึ้นมาทันทีเมื่อมีปัญหา
+            } else if (ev === 'playing') {
+                dbgScheduleHide(); // ซ่อนหลังเล่นสำเร็จ 8 วิ
+            }
+        });
+    });
+
+    // ── Rotation ──
+    (function () {
+        const deg = @ViewBag.ScreenRotation;
+        if (deg !== 0) document.body.classList.add('rotate-' + deg);
     })();
 
+    // Mute state ถูก apply ก่อน play() ใน loadVideo → ไม่มีที่นี้อีกแล้ว
+
+    // ── Video preload ──
+    @if (ViewBag.HasVideo == true)
+    {
+        <text>
+        loadVideo('/videos/idle.mp4');
+        </text>
+    }
+    else
+    {
+        <text>
+        overlay.style.display = 'none';
+        document.getElementById('noVideoMsg').style.display = 'flex';
+        videoReady = true;
+        </text>
+    }
+
+    function loadVideo(url) {
+        dbgLog('XHR start: ' + url);
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+
+        xhr.onprogress = function (e) {
+            if (!e.lengthComputable) return;
+            const pct = Math.round(e.loaded / e.total * 100);
+            bufFill.style.width = pct + '%';
+            bufPct.textContent  = pct + '%';
+        };
+
+        xhr.onload = function () {
+            dbgLog('XHR done, size=' + (xhr.response.size / 1024 / 1024).toFixed(1) + 'MB');
+            if (blobUrl) URL.revokeObjectURL(blobUrl);
+            blobUrl = URL.createObjectURL(xhr.response);
+            idleVid.src = blobUrl;
+            videoReady  = true;
+
+            bufFill.style.width = '100%';
+            bufPct.textContent  = '100%';
+            dbgLog('blob URL set → overlay fade');
+
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                if (!showingCar) {
+                    playWithMuteState();
+                }
+            }, 500);
+        };
+
+        xhr.onerror = function () {
+            dbgLog('XHR ERROR', 'err');
+            overlay.style.display = 'none';
+        };
+
+        xhr.send();
+    }
+
+    // ── Play helper: fetch mute state ก่อน play() เพื่อไม่ให้ Chromium pause ──
+    function playWithMuteState() {
+        fetch('/Admin/GetMuteState')
+            .then(r => r.json())
+            .then(d => {
+                idleVid.muted = d.muted;
+                dbgLog('pre-play muted=' + d.muted);
+                return idleVid.play();
+            })
+            .then(() => {
+                dbgLog('play() ok');
+            })
+            .catch(e => {
+                // unmuted autoplay blocked → retry muted
+                dbgLog('play() blocked (' + e.message + ') → retry muted', 'warn');
+                idleVid.muted = true;
+                idleVid.play().catch(e2 => dbgLog('retry failed: ' + e2.message, 'err'));
+            });
+    }
+
+    // ── SignalR ──
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/parkingHub", { transport: signalR.HttpTransportType.WebSockets })
         .withAutomaticReconnect()
         .build();
 
-    // ✅ รับ 3 พารามิเตอร์ให้ตรงกับ Controller: imagePath, hasCar, activePin
     connection.on("ReceiveStatus", (imagePath, hasCar, activePin) => {
-        console.log("🔔 SignalR Received:", { imagePath, hasCar, activePin });
-
         if (hasCar === true && imagePath && imagePath !== "") {
-            const targetUrl = '/uploads/' + imagePath;
-            console.log("📸 Changing image to:", targetUrl);
-            
-            carImg.src = targetUrl;
+            showingCar = true;
+            carImg.src = '/uploads/' + imagePath;
             carImg.style.display = 'block';
             idleVid.style.display = 'none';
-            idleVid.pause(); // หยุดวิดีโอประหยัดพลังงาน
+            idleVid.pause();
         } else {
-            console.log("🎥 Returning to Idle Video");
+            showingCar = false;
             carImg.style.display = 'none';
             idleVid.style.display = 'block';
-            idleVid.play().catch(e => console.warn("Video Play Error:", e));
+            if (videoReady) {
+                playWithMuteState();
+            }
         }
     });
 
-    // รับคำสั่งให้ reload หน้าใหม่เมื่อ upload วิดีโอใหม่
     connection.on("ReloadPage", () => {
         location.reload();
     });
 
-    // รับคำสั่ง Mute/Unmute จาก Admin
     connection.on("SetMute", (muted) => {
         idleVid.muted = muted;
     });
 
-    // ระบบหมุนหน้าจอแบบ Real-time
     connection.on("RotateScreen", (degree) => {
-        console.log("🔄 Rotating Screen to:", degree);
-        document.body.classList.remove('rotate-0', 'rotate-90', 'rotate-180', 'rotate-270');
+        document.body.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
         if (degree !== 0) document.body.classList.add('rotate-' + degree);
     });
 
     async function startConnection() {
         try {
             await connection.start();
-            console.log("✅ Connected to SignalR Hub!");
         } catch (err) {
-            console.error("❌ Connection failed, retrying...", err);
-            setTimeout(startConnection, 1000); 
+            console.error("SignalR connection failed, retrying...", err);
+            setTimeout(startConnection, 1000);
         }
     }
 

@@ -254,6 +254,13 @@
     .pk-footer-meta { font-size: 12px; color: var(--ink-4); display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
     .pk-footer-meta svg { width: 13px; height: 13px; stroke: var(--ink-4); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
+    /* ── Upload Progress ── */
+    .pk-upload-progress { display: none; margin-top: 14px; }
+    .pk-upload-progress.active { display: block; }
+    .pk-progress-track { height: 8px; background: var(--border-lt); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
+    .pk-progress-fill { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, #3b82f6, #2563EB); transition: width .25s ease; }
+    .pk-progress-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; }
+
     /* ── Responsive ── */
     @@media (max-width: 900px) {
         .pk-stat-row { grid-template-columns: 1fr; }
@@ -435,7 +442,7 @@
             </div>
             <div class="pk-card-body">
                 <div class="pk-vbox">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                         <source src="/videos/idle.mp4?v=@DateTime.Now.Ticks" type="video/mp4">
                     </video>
                 </div>
@@ -443,7 +450,7 @@
                     Replace the current idle loop displayed on parking screens.
                     Upload a new MP4 file below — changes take effect immediately after saving.
                 </p>
-                <form asp-action="UpdateIdleVideo" method="post" enctype="multipart/form-data" onsubmit="return validateVideoUpload(this)">
+                <form id="videoUploadForm" asp-action="UpdateIdleVideo" method="post" enctype="multipart/form-data">
                     <label class="pk-file-zone" id="videoDropZone">
                         <div class="pk-fz-icon">
                             <svg viewBox="0 0 24 24">
@@ -456,8 +463,17 @@
                         <div class="pk-fz-sub" id="videoFileName">Only .mp4 files are accepted</div>
                         <input type="file" name="videoFile" accept="video/mp4" required id="videoFileInput">
                     </label>
+                    <div class="pk-upload-progress" id="videoUploadProgress">
+                        <div class="pk-progress-track">
+                            <div class="pk-progress-fill" id="videoProgressFill"></div>
+                        </div>
+                        <div class="pk-progress-meta">
+                            <span id="videoProgressPct">0%</span>
+                            <span id="videoProgressSpeed">—</span>
+                        </div>
+                    </div>
                     <div class="pk-btn-row">
-                        <button type="submit" class="btn-pk-primary">
+                        <button type="button" id="videoSubmitBtn" class="btn-pk-primary" onclick="uploadVideoXhr()">
                             <svg viewBox="0 0 24 24">
                                 <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/>
                                 <polyline points="14 2 14 8 20 8"/>
@@ -709,6 +725,71 @@
             return false;
         }
         return true;
+    }
+
+    // ── XHR Video Upload with progress ──
+    function uploadVideoXhr() {
+        const form  = document.getElementById('videoUploadForm');
+        const input = form.querySelector('input[type="file"]');
+        const file  = input?.files[0];
+        if (!file) { showUploadError('กรุณาเลือกไฟล์วิดีโอก่อนกด Save'); return; }
+        if (!validateVideoUpload(form)) return;
+
+        const progress = document.getElementById('videoUploadProgress');
+        const fill     = document.getElementById('videoProgressFill');
+        const pct      = document.getElementById('videoProgressPct');
+        const spd      = document.getElementById('videoProgressSpeed');
+        const btn      = document.getElementById('videoSubmitBtn');
+        const origHtml = btn.innerHTML;
+
+        btn.disabled = true;
+        btn.textContent = 'Uploading…';
+        progress.classList.add('active');
+        fill.style.width      = '0%';
+        fill.style.background = '';
+        pct.textContent = '0%';
+        spd.textContent = '—';
+
+        const startTime = Date.now();
+        const xhr       = new XMLHttpRequest();
+        const formData  = new FormData(form);
+
+        xhr.upload.onprogress = function (e) {
+            if (!e.lengthComputable) return;
+            const percent = Math.round(e.loaded / e.total * 100);
+            const elapsed = (Date.now() - startTime) / 1000 || 0.001;
+            const mbps    = (e.loaded / elapsed / 1024 / 1024).toFixed(1);
+            fill.style.width = percent + '%';
+            pct.textContent  = percent + '%';
+            spd.textContent  = mbps + ' MB/s';
+        };
+
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 400) {
+                fill.style.width      = '100%';
+                fill.style.background = '#22c55e';
+                pct.textContent       = '100% — Done!';
+                spd.textContent       = '';
+                btn.disabled          = false;
+                btn.style.background  = '#22c55e';
+                btn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Saved!';
+                setTimeout(() => { window.location.reload(); }, 900);
+            } else {
+                resetBtn(); showUploadError('Upload failed (HTTP ' + xhr.status + ')');
+            }
+        };
+
+        xhr.onerror = function () { resetBtn(); showUploadError('เกิดข้อผิดพลาดในการส่งไฟล์ ลองอีกครั้ง'); };
+
+        function resetBtn() {
+            btn.disabled         = false;
+            btn.innerHTML        = origHtml;
+            btn.style.background = '';
+            progress.classList.remove('active');
+        }
+
+        xhr.open('POST', '/Admin/UpdateIdleVideo');
+        xhr.send(formData);
     }
 
     // ── Video upload ──
