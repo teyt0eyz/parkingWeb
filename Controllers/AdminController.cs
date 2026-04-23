@@ -18,6 +18,7 @@ public class AdminController : Controller
 
     // เก็บ mute state ไว้บน server ให้ทุกหน้าดึงได้
     private static bool _kioskMuted = false;
+    private static bool _debugMode  = false;
 
     public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger, IHubContext<ParkingHub> hubContext, GpioBaselineService baselineSvc)
     {
@@ -280,6 +281,21 @@ public class AdminController : Controller
     public IActionResult GetMuteState()
     {
         return Ok(new { muted = _kioskMuted });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SetDebugMode(bool enabled)
+    {
+        _debugMode = enabled;
+        _logger.SaveSystemLog($"Kiosk debug panel set to {(enabled ? "ON" : "OFF")}");
+        await _hubContext.Clients.All.SendAsync("SetDebugMode", enabled);
+        return Ok(new { enabled });
+    }
+
+    [HttpGet]
+    public IActionResult GetDebugMode()
+    {
+        return Ok(new { enabled = _debugMode });
     }
     
     // 5. ระบบดูรายการ Log ย้อนหลัง (เก็บส่วนคำนวณพื้นที่ไว้ครบถ้วน)

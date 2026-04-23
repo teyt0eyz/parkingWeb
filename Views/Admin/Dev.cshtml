@@ -434,7 +434,7 @@ body {
                         <div class="pk-card-title">Live Monitor</div>
                     </div>
                 </div>
-                <span id="connection-status" class="pk-conn-badge off">Disconnected</span>
+                <span id="connection-status" class="pk-conn-badge off">ไม่ได้เชื่อมต่อ</span>
             </div>
             <div class="pk-card-body">
                 <div class="monitor-grid">
@@ -479,7 +479,7 @@ body {
             </div>
             <div class="pk-card-body" style="padding-bottom:16px;">
                 <div class="dev-terminal" id="terminal">
-                    <div class="log-entry boot"><span class="ts">[BOOT]</span> System ready · waiting for signal...</div>
+                    <div class="log-entry boot"><span class="ts">[เริ่มต้น]</span> ระบบพร้อมทำงาน · รอสัญญาณ GPIO...</div>
                 </div>
             </div>
         </div>
@@ -494,12 +494,12 @@ body {
                     <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                 </div>
                 <div>
-                    <div class="pk-card-title">Raw GPIO Readings</div>
+                    <div class="pk-card-title">สัญญาณ GPIO แบบ Real-time</div>
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
-                <span class="pk-card-meta">live · ~1s refresh</span>
-                <span id="raw-badge" class="pk-conn-badge off">Waiting...</span>
+                <span class="pk-card-meta">อัพเดตทุก ~1 วินาที</span>
+                <span id="raw-badge" class="pk-conn-badge off">รอสัญญาณ...</span>
             </div>
         </div>
         <div class="pk-card-body" style="padding:0;">
@@ -507,12 +507,12 @@ body {
             <table class="raw-table">
                 <thead>
                     <tr>
-                        <th>Pin / Name</th>
-                        <th>Raw Value</th>
-                        <th>Idle Baseline</th>
-                        <th>Status</th>
-                        <th>Suggestion</th>
-                        <th>Config Baseline</th>
+                        <th>ขา GPIO</th>
+                        <th>สัญญาณปัจจุบัน</th>
+                        <th>สัญญาณตอนไม่มีรถ</th>
+                        <th>สถานะ</th>
+                        <th>ตรวจจับรถเมื่อ</th>
+                        <th>กำหนดค่าตอนไม่มีรถ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -525,16 +525,16 @@ body {
                                     <span class="raw-pin-num">@pin</span>
                                 </div>
                             </td>
-                            <td id="raw-val-@pin"><span class="raw-val waiting">— waiting</span></td>
-                            <td id="raw-idle-@pin"><span class="raw-val waiting">— waiting</span></td>
+                            <td id="raw-val-@pin"><span class="raw-val waiting">— รอ...</span></td>
+                            <td id="raw-idle-@pin"><span class="raw-val waiting">— รอ...</span></td>
                             <td id="raw-status-@pin"><span class="raw-status not-trigger">—</span></td>
                             <td id="raw-hint-@pin"></td>
                             <td>
                                 <div class="cfg-btn-wrap">
-                                    <button class="cfg-btn set-high" onclick="setBaseline(@pin, true)"  title="ตั้ง idle = HIGH">Idle = HIGH</button>
-                                    <button class="cfg-btn set-low"  onclick="setBaseline(@pin, false)" title="ตั้ง idle = LOW">Idle = LOW</button>
-                                    <button class="cfg-btn set-auto" id="cfg-auto-@pin" onclick="clearBaseline(@pin)" title="ล้าง override" style="display:none;">↺ Auto</button>
-                                    <span class="cfg-manual-badge" id="cfg-badge-@pin" style="display:none;">MANUAL</span>
+                                    <button class="cfg-btn set-high" onclick="setBaseline(@pin, true)"  title="ตั้งค่าว่าตอนไม่มีรถ สัญญาณจะสูง">ว่าง = สูง (HIGH)</button>
+                                    <button class="cfg-btn set-low"  onclick="setBaseline(@pin, false)" title="ตั้งค่าว่าตอนไม่มีรถ สัญญาณจะต่ำ">ว่าง = ต่ำ (LOW)</button>
+                                    <button class="cfg-btn set-auto" id="cfg-auto-@pin" onclick="clearBaseline(@pin)" title="ให้ระบบตรวจจับเองอัตโนมัติ" style="display:none;">↺ คืนค่าอัตโนมัติ</button>
+                                    <span class="cfg-manual-badge" id="cfg-badge-@pin" style="display:none;">กำหนดเอง</span>
                                 </div>
                             </td>
                         </tr>
@@ -582,11 +582,11 @@ body {
             log.className = response.ok ? 'log-entry' : 'log-entry err';
             if (response.ok && data) {
                 const carStatus = data.hasCar
-                    ? `<span style="color:#16a34a;font-weight:700;">CAR DETECTED</span>`
-                    : `<span style="color:#64748b;">Idle</span>`;
+                    ? `<span style="color:#16a34a;font-weight:700;">ตรวจพบรถ</span>`
+                    : `<span style="color:#64748b;">ไม่มีรถ (ว่าง)</span>`;
                 log.innerHTML = `<span class="ts">[${time}]</span> GPIO <span style="color:#2563eb;">${pin}</span> → <span style="color:${sigColor};font-weight:700;">${sigLabel}</span> · ${carStatus}`;
             } else {
-                log.innerHTML = `<span class="ts">[${time}]</span> ❌ GPIO ${pin} trigger FAILED`;
+                log.innerHTML = `<span class="ts">[${time}]</span> ❌ GPIO ${pin} ส่งสัญญาณไม่สำเร็จ`;
             }
             terminal.prepend(log);
         } catch (err) {
@@ -611,44 +611,44 @@ body {
 
     // ── Raw GPIO Readings ──
     devConnection.on("RawPinValues", (pins) => {
-        document.getElementById('raw-badge').textContent = 'Live';
+        document.getElementById('raw-badge').textContent = 'กำลังรับสัญญาณ';
         document.getElementById('raw-badge').className   = 'pk-conn-badge live';
 
         pins.forEach(({ pin, isHigh, idleIsHigh, isManual }) => {
-            // Raw value
+            // สัญญาณปัจจุบัน
             const valCell = document.getElementById('raw-val-' + pin);
             if (valCell) valCell.innerHTML = isHigh
-                ? `<span class="raw-val is-high"><span class="dot"></span>1 · HIGH</span>`
-                : `<span class="raw-val is-low"><span class="dot"></span>0 · LOW</span>`;
+                ? `<span class="raw-val is-high"><span class="dot"></span>สูง (HIGH)</span>`
+                : `<span class="raw-val is-low"><span class="dot"></span>ต่ำ (LOW)</span>`;
 
-            // Idle baseline
+            // สัญญาณตอนไม่มีรถ
             const idleCell = document.getElementById('raw-idle-' + pin);
             if (idleCell) {
-                const badge = isManual ? ` <span class="cfg-manual-badge">MANUAL</span>` : '';
+                const badge = isManual ? ` <span class="cfg-manual-badge">กำหนดเอง</span>` : '';
                 idleCell.innerHTML = idleIsHigh
-                    ? `<span class="raw-val is-high" style="font-size:11px;"><span class="dot"></span>HIGH</span>${badge}`
-                    : `<span class="raw-val is-low"  style="font-size:11px;"><span class="dot"></span>LOW</span>${badge}`;
+                    ? `<span class="raw-val is-high" style="font-size:11px;"><span class="dot"></span>สูง (HIGH)</span>${badge}`
+                    : `<span class="raw-val is-low"  style="font-size:11px;"><span class="dot"></span>ต่ำ (LOW)</span>${badge}`;
             }
 
-            // Auto button visibility
+            // แสดงปุ่มคืนค่าอัตโนมัติเฉพาะตอนกำหนดเอง
             const autoBtn = document.getElementById('cfg-auto-' + pin);
             if (autoBtn) autoBtn.style.display = isManual ? 'inline-flex' : 'none';
 
-            // Status
+            // สถานะ
             const triggered = isHigh !== idleIsHigh;
             const statusCell = document.getElementById('raw-status-' + pin);
             if (statusCell) statusCell.innerHTML = triggered
-                ? `<span class="raw-status triggering">● CAR</span>`
-                : `<span class="raw-status not-trigger">○ Idle</span>`;
+                ? `<span class="raw-status triggering">● มีรถ</span>`
+                : `<span class="raw-status not-trigger">○ ว่าง</span>`;
 
-            // Suggestion
+            // เงื่อนไขตรวจจับ
             const hintCell = document.getElementById('raw-hint-' + pin);
             if (hintCell) {
-                const triggerOn = idleIsHigh ? 'LOW' : 'HIGH';
-                hintCell.innerHTML = `<span class="raw-hint">idle=${idleIsHigh?'HIGH':'LOW'} → fires on ${triggerOn}</span>`;
+                const triggerOn = idleIsHigh ? 'ต่ำ (LOW)' : 'สูง (HIGH)';
+                hintCell.innerHTML = `<span class="raw-hint">สัญญาณเปลี่ยนเป็น ${triggerOn}</span>`;
             }
 
-            // Row highlight
+            // เน้นแถวเมื่อตรวจพบรถ
             const row = document.getElementById('raw-row-' + pin);
             if (row) row.className = triggered ? 'row-active' : '';
         });
@@ -663,7 +663,7 @@ body {
         const sc   = idleIsHigh ? '#16a34a' : '#dc2626';
         const log  = document.createElement('div');
         log.className = 'log-entry';
-        log.innerHTML = `<span class="ts">[${time}]</span> GPIO <span style="color:#2563eb;">${pin}</span> · Idle baseline → <span style="color:${sc};font-weight:700;">${sig}</span> <span class="cfg-manual-badge">MANUAL</span>`;
+        log.innerHTML = `<span class="ts">[${time}]</span> GPIO <span style="color:#2563eb;">${pin}</span> · ตั้งค่าตอนว่าง → <span style="color:${sc};font-weight:700;">${sig}</span> <span class="cfg-manual-badge">กำหนดเอง</span>`;
         document.getElementById('terminal').prepend(log);
     }
 
@@ -674,14 +674,14 @@ body {
         const log  = document.createElement('div');
         log.className = 'log-entry';
         log.style.borderLeftColor = '#cbd5e1';
-        log.innerHTML = `<span class="ts">[${time}]</span> GPIO <span style="color:#2563eb;">${pin}</span> · Baseline cleared → auto-detect`;
+        log.innerHTML = `<span class="ts">[${time}]</span> GPIO <span style="color:#2563eb;">${pin}</span> · คืนค่าอัตโนมัติแล้ว (ระบบตรวจจับเอง)`;
         document.getElementById('terminal').prepend(log);
     }
 
     async function startDevSignalR() {
         try {
             await devConnection.start();
-            statusBadge.textContent = 'Live';
+            statusBadge.textContent = 'เชื่อมต่อแล้ว';
             statusBadge.className   = 'pk-conn-badge live';
         } catch {
             setTimeout(startDevSignalR, 2000);

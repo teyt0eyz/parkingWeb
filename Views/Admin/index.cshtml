@@ -628,6 +628,14 @@
             </svg>
             Last synced &middot; @DateTime.Now.ToString("dd MMM yyyy, HH:mm")
         </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button type="button" id="debugToggleBtn" onclick="toggleKioskDebug()"
+                style="font-size:12px;font-weight:600;font-family:inherit;border-radius:var(--radius-sm);padding:10px 16px;border:1.5px solid var(--border);background:var(--white);color:var(--ink-3);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .2s;">
+            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+            </svg>
+            <span id="debugBtnLabel">Debug: OFF</span>
+        </button>
         <a asp-action="ViewLogs" class="btn-pk-log">
             <svg viewBox="0 0 24 24">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
@@ -637,6 +645,7 @@
             </svg>
             View 90-Day Log History
         </a>
+        </div>
     </div>
     
 
@@ -644,10 +653,31 @@
 </div><!-- /pk-content -->
 
 <script>
+    // ── Debug Toggle ──
+    let kioskDebug = false;
+
+    fetch('/Admin/GetDebugMode')
+        .then(r => r.json())
+        .then(d => { kioskDebug = d.enabled; updateDebugBtn(d.enabled); });
+
+    function toggleKioskDebug() {
+        kioskDebug = !kioskDebug;
+        updateDebugBtn(kioskDebug);
+        fetch(`/Admin/SetDebugMode?enabled=${kioskDebug}`, { method: 'POST' });
+    }
+
+    function updateDebugBtn(enabled) {
+        const btn   = document.getElementById('debugToggleBtn');
+        const label = document.getElementById('debugBtnLabel');
+        label.textContent = enabled ? 'Debug: ON' : 'Debug: OFF';
+        btn.style.background    = enabled ? '#0f172a' : 'var(--white)';
+        btn.style.color         = enabled ? '#4ade80' : 'var(--ink-3)';
+        btn.style.borderColor   = enabled ? '#166534' : 'var(--border)';
+    }
+
     // ── Mute Toggle ──
     let kioskMuted = false;
 
-    // sync ปุ่มกับ state จาก server ตอนโหลดหน้า
     fetch('/Admin/GetMuteState')
         .then(r => r.json())
         .then(data => { kioskMuted = data.muted; updateMuteBtn(data.muted); });

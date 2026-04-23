@@ -68,28 +68,29 @@
 
         /* ── Debug panel ── */
         #dbg {
-            position: fixed; bottom: 12px; left: 12px;
-            background: rgba(0,0,0,0.82);
+            position: fixed; bottom: 16px; left: 16px;
+            background: rgba(0,0,0,0.88);
             border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 10px 14px;
+            border-radius: 10px;
+            padding: 14px 18px;
             z-index: 1000;
             font-family: 'Courier New', monospace;
-            font-size: 11px; color: #94a3b8;
-            min-width: 260px; max-width: 340px;
-            line-height: 1.7;
+            font-size: 15px; color: #94a3b8;
+            min-width: 320px; max-width: 460px;
+            line-height: 1.9;
             pointer-events: none;
-            transition: opacity 0.6s ease;
+            display: none;
+            transition: opacity 0.4s ease;
         }
-        #dbg .dbg-row { display: flex; justify-content: space-between; gap: 12px; }
+        #dbg .dbg-row { display: flex; justify-content: space-between; gap: 16px; }
         #dbg .dbg-key { color: #64748b; }
         #dbg .dbg-val { color: #e2e8f0; font-weight: 600; }
         #dbg .dbg-val.ok   { color: #4ade80; }
         #dbg .dbg-val.warn { color: #facc15; }
         #dbg .dbg-val.err  { color: #f87171; }
         #dbg-log {
-            margin-top: 8px; border-top: 1px solid #1e293b;
-            padding-top: 6px; max-height: 90px; overflow: hidden;
+            margin-top: 10px; border-top: 1px solid #1e293b;
+            padding-top: 8px; max-height: 120px; overflow: hidden;
             display: flex; flex-direction: column-reverse;
         }
         #dbg-log div { color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -199,21 +200,17 @@
         document.getElementById('d-src').textContent    = idleVid.src ? (idleVid.src.startsWith('blob') ? 'blob ✓' : idleVid.src.slice(-20)) : 'empty';
     }
 
-    // ── Auto-hide / auto-show ──
+    // ── Debug panel visibility (controlled from Admin) ──
     const dbgPanel = document.getElementById('dbg');
-    let hideTimer  = null;
 
-    function dbgShow() {
-        dbgPanel.style.opacity = '1';
-        dbgPanel.style.pointerEvents = 'none';
-        clearTimeout(hideTimer);
+    function setDebugVisible(enabled) {
+        dbgPanel.style.display = enabled ? 'block' : 'none';
     }
-    function dbgScheduleHide() {
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(() => {
-            dbgPanel.style.opacity = '0';
-        }, 8000); // ซ่อนหลังเล่นปกติ 8 วิ
-    }
+
+    // sync state from server on load
+    fetch('/Admin/GetDebugMode')
+        .then(r => r.json())
+        .then(d => setDebugVisible(d.enabled));
 
     setInterval(dbgUpdate, 500);
 
@@ -226,15 +223,9 @@
                       : ev === 'playing'        ? 'ok' : '';
             dbgLog('EVENT: ' + ev.toUpperCase(), cls);
             dbgUpdate();
-
             if (ev === 'error') {
                 const err = idleVid.error;
                 dbgLog('ERR code=' + (err?.code) + ' msg=' + (err?.message ?? ''), 'err');
-                dbgShow(); // โชว์ค้างไว้ถ้า error
-            } else if (PROBLEM_EVENTS.has(ev)) {
-                dbgShow(); // โชว์ขึ้นมาทันทีเมื่อมีปัญหา
-            } else if (ev === 'playing') {
-                dbgScheduleHide(); // ซ่อนหลังเล่นสำเร็จ 8 วิ
             }
         });
     });
@@ -353,6 +344,11 @@
 
     connection.on("SetMute", (muted) => {
         idleVid.muted = muted;
+    });
+
+    connection.on("SetDebugMode", (enabled) => {
+        setDebugVisible(enabled);
+        dbgLog('Debug panel ' + (enabled ? 'ON' : 'OFF'));
     });
 
     connection.on("RotateScreen", (degree) => {
