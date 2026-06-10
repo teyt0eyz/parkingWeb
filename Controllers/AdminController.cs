@@ -16,12 +16,13 @@ public class AdminController : Controller
     private readonly IHubContext<ParkingHub> _hubContext;
     private readonly GpioBaselineService _baselineSvc;
     private readonly SimulatorModeService _simulatorSvc;
+    private readonly PinPriorityService _pinPrioritySvc;
 
     // เก็บ mute state ไว้บน server ให้ทุกหน้าดึงได้
     private static bool _kioskMuted = false;
     private static bool _debugMode  = false;
 
-    public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger, IHubContext<ParkingHub> hubContext, GpioBaselineService baselineSvc, SimulatorModeService simulatorSvc)
+    public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger, IHubContext<ParkingHub> hubContext, GpioBaselineService baselineSvc, SimulatorModeService simulatorSvc, PinPriorityService pinPrioritySvc)
     {
         _db = db;
         _env = env;
@@ -29,6 +30,7 @@ public class AdminController : Controller
         _hubContext = hubContext;
         _baselineSvc = baselineSvc;
         _simulatorSvc = simulatorSvc;
+        _pinPrioritySvc = pinPrioritySvc;
     }
 
     // 1. หน้าหลัก Admin + ระบบคำนวณพื้นที่ Disk (SD Card)
@@ -402,6 +404,25 @@ public class AdminController : Controller
         return Ok(new { enabled = _simulatorSvc.Enabled });
     }
 
+    [HttpGet]
+    public IActionResult GetPinPriority()
+    {
+        return Ok(new { order = _pinPrioritySvc.GetOrder() });
+    }
+
+    // ตั้งลำดับ priority ของขา GPIO ใหม่ — กำหนดทั้งขาที่ชนะเมื่อมีรถพร้อมกันหลายขา
+    // และลำดับ z-index ของเลเยอร์ภาพบนหน้า Kiosk/Dev
+    [HttpPost]
+    public async Task<IActionResult> SetPinPriority([FromBody] int[] order)
+    {
+        if (!_pinPrioritySvc.SetOrder(order))
+            return BadRequest(new { success = false, message = "Invalid pin order" });
+
+        _logger.SaveSystemLog($"GPIO layer priority updated: {string.Join(", ", order)}");
+        await _hubContext.Clients.All.SendAsync("ReloadPage");
+        return Ok(new { success = true, order });
+    }
+
 
     // 5. ระบบดูรายการ Log ย้อนหลัง (เก็บส่วนคำนวณพื้นที่ไว้ครบถ้วน)
     public IActionResult ViewLogs()
@@ -483,6 +504,7 @@ public class AdminController : Controller
     public IActionResult Dev()
     {
         var states = _db.ParkingStates.ToList();
+        ViewBag.PinPriority = _pinPrioritySvc.GetOrder();
         return View(states);
     }
 

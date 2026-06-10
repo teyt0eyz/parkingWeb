@@ -1,16 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using ParkingWeb.Data;
+using ParkingWeb.Services;
 using System.IO;
 
 public class HomeController : Controller
 {
     private readonly IWebHostEnvironment _environment;
     private readonly ApplicationDbContext _db;
+    private readonly PinPriorityService _pinPrioritySvc;
 
-    public HomeController(IWebHostEnvironment environment, ApplicationDbContext db)
+    public HomeController(IWebHostEnvironment environment, ApplicationDbContext db, PinPriorityService pinPrioritySvc)
     {
         _environment = environment;
         _db = db;
+        _pinPrioritySvc = pinPrioritySvc;
     }
 
     // หน้าจอแสดงผลสำหรับคนขับ (และหน้าอัปโหลดในตัวเพื่อความง่าย)
@@ -42,6 +45,9 @@ public class HomeController : Controller
             int.TryParse(System.IO.File.ReadAllText(rotFile).Trim(), out int saved))
             rotation = saved;
         ViewBag.ScreenRotation = rotation;
+
+        // ลำดับ priority ของขา GPIO ใช้กำหนด z-index ของเลเยอร์ภาพ
+        ViewBag.PinPriority = _pinPrioritySvc.GetOrder();
 
         return View();
     }

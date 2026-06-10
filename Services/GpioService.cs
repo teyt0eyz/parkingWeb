@@ -15,17 +15,20 @@ public class GpioService : IHostedService
     private readonly LogService _logService;
     private readonly GpioBaselineService _baseline;
     private readonly SimulatorModeService _simulator;
+    private readonly PinPriorityService _pinPriority;
 
+    // ขา GPIO ทั้งหมดที่ใช้งาน (ลำดับไม่มีผล — ใช้สำหรับเปิดขา/อ่าน baseline เริ่มต้นเท่านั้น)
     private readonly int[] _pins = { 17, 27, 22, 23, 24 };
     private int _activePin = -1;
 
-    public GpioService(IHubContext<ParkingHub> hub, IServiceScopeFactory scopeFactory, LogService logService, GpioBaselineService baseline, SimulatorModeService simulator)
+    public GpioService(IHubContext<ParkingHub> hub, IServiceScopeFactory scopeFactory, LogService logService, GpioBaselineService baseline, SimulatorModeService simulator, PinPriorityService pinPriority)
     {
         _hub = hub;
         _scopeFactory = scopeFactory;
         _logService = logService;
         _baseline = baseline;
         _simulator = simulator;
+        _pinPriority = pinPriority;
 
         _hasGpio = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
         _gpio = _hasGpio ? new GpioController() : null;
@@ -104,7 +107,8 @@ public class GpioService : IHostedService
             if (!_simulator.Enabled)
             {
                 int triggeredPin = -1;
-                foreach (var pin in _pins)
+                // ตรวจตามลำดับ priority ที่ตั้งค่าไว้ — ขาแรกที่เจอรถชนะ
+                foreach (var pin in _pinPriority.GetOrder())
                 {
                     if (IsPinActive(pin)) { triggeredPin = pin; break; }
                 }

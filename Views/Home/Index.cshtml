@@ -160,8 +160,8 @@
 </div>
 
 @{
-    // priority สูงสุด → ต่ำสุด ต้องตรงกับ GpioService._pins (ลำดับการสแกนหา activePin)
-    var pinPriority   = new[] { 17, 27, 22, 23, 24 };
+    // priority สูงสุด → ต่ำสุด มาจาก PinPriorityService (ตั้งค่าได้ที่หน้า Dev) ต้องตรงกับ GpioService
+    var pinPriority   = (ViewBag.PinPriority as int[]) ?? new[] { 17, 27, 22, 23, 24 };
     var parkingStates = (ViewBag.ParkingStates as List<ParkingWeb.Models.ParkingState>) ?? new List<ParkingWeb.Models.ParkingState>();
 }
 <div id="display-container">
@@ -188,12 +188,35 @@
     const bufFill   = document.getElementById('bufferFill');
     const bufPct    = document.getElementById('bufferPct');
 
-    // ── State Layers (เรียงตาม priority สูงสุด → ต่ำสุด, ตรงกับ GpioService._pins) ──
-    const PIN_PRIORITY = [17, 27, 22, 23, 24];
+    // ดึงสถานะ mute ไว้ล่วงหน้าแบบขนานไปกับการโหลดวิดีโอ เพื่อไม่ต้องรอ fetch ตอน canplaythrough
+    const muteStatePromise = fetch('/Admin/GetMuteState').then(r => r.json());
+
+    // ── State Layers (เรียงตาม priority สูงสุด → ต่ำสุด, ตั้งค่าได้ที่หน้า Dev) ──
+    const PIN_PRIORITY = [@string.Join(",", pinPriority)];
     const stateLayers  = {};
     PIN_PRIORITY.forEach(pin => stateLayers[pin] = document.getElementById('layer-pin-' + pin));
 
+    // หน่วงเวลาก่อนกลับไปเลเยอร์วิดีโอ (activePin = -1) เพื่อกันสัญญาณ GPIO กระตุกถี่ๆ
+    // (เปิด-ปิดรัว) ที่ทำให้เลเยอร์ภาพเปิด-ปิดสลับเร็วจนวิดีโอที่ถูกบังอยู่ขึ้นเฟรมดำชั่วขณะ
+    const IDLE_SWITCH_DELAY_MS = 300;
+    let idleSwitchTimer = null;
+
     function showStateLayer(activePin) {
+        if (activePin !== -1) {
+            if (idleSwitchTimer) { clearTimeout(idleSwitchTimer); idleSwitchTimer = null; }
+            applyActiveLayer(activePin);
+            return;
+        }
+
+        // ไม่รีบซ่อนเลเยอร์ภาพทันที รอดูว่าสัญญาณนิ่งจริงก่อน
+        if (idleSwitchTimer) clearTimeout(idleSwitchTimer);
+        idleSwitchTimer = setTimeout(() => {
+            idleSwitchTimer = null;
+            applyActiveLayer(-1);
+        }, IDLE_SWITCH_DELAY_MS);
+    }
+
+    function applyActiveLayer(activePin) {
         Object.values(stateLayers).forEach(el => el?.classList.remove('is-active'));
         const layer = stateLayers[activePin];
         // ถ้าขานี้ยังไม่ได้ตั้งรูปไว้ ปล่อยให้วิดีโอด้านล่างแสดงต่อแทน
@@ -264,6 +287,23 @@
         });
     });
 
+    // ── Auto-recovery: ถ้าวิดีโอหยุดเล่นเอง (pause/stalled/waiting) ให้สั่งเล่นต่อทันที ──
+    // กันกรณีถูกเลเยอร์ภาพบังนานแล้ว Chromium บน Pi หยุด decode วิดีโอ ทำให้ค้างเป็นเฟรมดำตอนเลเยอร์เปิดออก
+    let recoveryTimer = null;
+    function scheduleVideoRecovery(reason) {
+        if (recoveryTimer) return;
+        recoveryTimer = setTimeout(() => {
+            recoveryTimer = null;
+            if (idleVid.paused) {
+                dbgLog('auto-recovery (' + reason + ') → play() again', 'warn');
+                idleVid.play().catch(e => dbgLog('auto-recovery play() failed: ' + e.message, 'err'));
+            }
+        }, 400);
+    }
+    ['pause', 'stalled', 'waiting'].forEach(ev => {
+        idleVid.addEventListener(ev, () => scheduleVideoRecovery(ev));
+    });
+
     // ── Rotation ──
     (function () {
         const deg = @ViewBag.ScreenRotation;
@@ -302,10 +342,12 @@
             bufFill.style.width = '100%';
             bufPct.textContent  = '100%';
 
+            // เริ่มเล่นวิดีโอทันทีคู่ขนานกับ overlay ที่กำลัง fade ออก (0.5s)
+            // แทนที่จะรอ fade เสร็จก่อนแล้วค่อยเริ่มเล่น เพื่อลดเวลาที่จอแสดงผลค้างดำ
+            playWithMuteState();
             overlay.style.opacity = '0';
             setTimeout(() => {
                 overlay.style.display = 'none';
-                playWithMuteState();
             }, 500);
         }, { once: true });
 
@@ -313,10 +355,9 @@
         idleVid.load();
     }
 
-    // ── Play helper: fetch mute state ก่อน play() เพื่อไม่ให้ Chromium pause ──
+    // ── Play helper: ใช้สถานะ mute ที่ดึงไว้ล่วงหน้าก่อน play() เพื่อไม่ให้ Chromium pause ──
     function playWithMuteState() {
-        fetch('/Admin/GetMuteState')
-            .then(r => r.json())
+        muteStatePromise
             .then(d => {
                 idleVid.muted = d.muted;
                 dbgLog('pre-play muted=' + d.muted);

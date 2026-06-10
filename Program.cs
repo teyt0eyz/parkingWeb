@@ -27,6 +27,7 @@ builder.Services.AddHostedService<GpioService>();
 builder.Services.AddSingleton<ParkingWeb.Services.LogService>();
 builder.Services.AddSingleton<ParkingWeb.Services.GpioBaselineService>();
 builder.Services.AddSingleton<ParkingWeb.Services.SimulatorModeService>();
+builder.Services.AddSingleton<ParkingWeb.Services.PinPriorityService>();
 
 var app = builder.Build();
 

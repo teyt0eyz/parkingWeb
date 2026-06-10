@@ -1,7 +1,8 @@
 @model IEnumerable<ParkingWeb.Models.ParkingState>
 @{
     ViewData["Title"] = "Developer Console";
-    int[] monitorPins = { 17, 27, 22, 23, 24 };
+    // ลำดับ priority ของขา GPIO มาจาก PinPriorityService (ตั้งค่าได้ในหน้านี้)
+    int[] monitorPins = (ViewBag.PinPriority as int[]) ?? new[] { 17, 27, 22, 23, 24 };
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -231,6 +232,31 @@ body {
 .layer-item.active .layer-label { color: var(--green); }
 .layer-item.active .layer-name  { color: #15803d; }
 .layer-item[data-has-image="false"] .layer-sub { color: var(--red); }
+
+/* ── Pin Priority Order ── */
+.priority-list { display: flex; flex-direction: column; gap: 8px; }
+.priority-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 10px 16px;
+    transition: all .25s ease;
+}
+.priority-rank {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    color: var(--ink-4); background: var(--surface-3); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 9px; flex-shrink: 0; min-width: 36px; text-align: center;
+}
+.priority-name { flex: 1; font-size: 13px; font-weight: 700; color: var(--ink-2); font-family: 'JetBrains Mono', monospace; }
+.priority-controls { display: flex; gap: 6px; flex-shrink: 0; }
+.priority-btn {
+    font-size: 13px; font-weight: 700; width: 30px; height: 30px;
+    border-radius: 6px; border: 1px solid var(--border-lt); background: var(--surface);
+    color: var(--ink-3); cursor: pointer; transition: all .15s;
+    display: flex; align-items: center; justify-content: center;
+}
+.priority-btn:hover:not(:disabled) { background: var(--blue-lt); color: var(--blue); border-color: var(--blue-bd); }
+.priority-btn:active:not(:disabled) { transform: scale(.92); }
+.priority-btn:disabled { opacity: .3; cursor: not-allowed; }
 
 /* ── Terminal ── */
 .dev-terminal {
@@ -478,13 +504,10 @@ body {
         </div>
         <div class="pk-card-body">
             <div class="layer-stack" id="layerStack">
-                @{
-                    var pinPriority = new[] { 17, 27, 22, 23, 24 };
-                }
-                @for (int i = 0; i < pinPriority.Length; i++)
+                @for (int i = 0; i < monitorPins.Length; i++)
                 {
-                    var pin       = pinPriority[i];
-                    var z         = pinPriority.Length - i;
+                    var pin       = monitorPins[i];
+                    var z         = monitorPins.Length - i;
                     var layerState = Model.FirstOrDefault(s => s.GpioPin == pin);
                     var hasImage  = !string.IsNullOrEmpty(layerState?.ImagePath);
                     <div class="layer-item" id="layer-stack-pin-@pin" data-has-image="@(hasImage ? "true" : "false")">
@@ -510,6 +533,37 @@ body {
                         <span class="layer-label">Inactive</span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 01c: Pin Priority Order -->
+    <div class="pk-card">
+        <div class="pk-card-head">
+            <div class="pk-card-head-left">
+                <div class="pk-card-icon amber">
+                    <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h12M3 18h6"/></svg>
+                </div>
+                <div>
+                    <div class="pk-card-title">Pin Priority Order</div>
+                </div>
+            </div>
+            <span class="pk-card-meta">#1 = สำคัญสุด · z-index บนสุด</span>
+        </div>
+        <div class="pk-card-body">
+            <div class="priority-list" id="priorityList">
+                @for (int i = 0; i < monitorPins.Length; i++)
+                {
+                    var pin = monitorPins[i];
+                    <div class="priority-item" data-pin="@pin">
+                        <div class="priority-rank">#@(i + 1)</div>
+                        <div class="priority-name">GPIO @pin</div>
+                        <div class="priority-controls">
+                            <button class="priority-btn" onclick="movePinPriority(@pin, -1)" @(i == 0 ? "disabled" : "")>▲</button>
+                            <button class="priority-btn" onclick="movePinPriority(@pin, 1)" @(i == monitorPins.Length - 1 ? "disabled" : "")>▼</button>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -700,7 +754,7 @@ body {
     });
 
     // ── Display Layer Stack ──
-    const LAYER_PIN_PRIORITY = [17, 27, 22, 23, 24];
+    let LAYER_PIN_PRIORITY = [@string.Join(",", monitorPins)];
     function setActiveLayer(activePin) {
         LAYER_PIN_PRIORITY.forEach(pin => {
             const layer = document.getElementById('layer-stack-pin-' + pin);
@@ -716,6 +770,55 @@ body {
         idle.querySelector('.layer-label').textContent = 'Playing';
     }
     setActiveLayer(-1); // ค่าเริ่มต้น: ยังไม่มีเลเยอร์ GPIO แสดงผล วิดีโอ idle เล่นอยู่
+
+    // ── Pin Priority Order ──
+    // สลับตำแหน่งขา GPIO กับขาที่อยู่ติดกัน (direction: -1 = ขึ้น, 1 = ลง) แล้วบันทึกลำดับใหม่
+    async function movePinPriority(pin, direction) {
+        const order = LAYER_PIN_PRIORITY.slice();
+        const i = order.indexOf(pin);
+        const j = i + direction;
+        if (i === -1 || j < 0 || j >= order.length) return;
+
+        [order[i], order[j]] = [order[j], order[i]];
+
+        try {
+            const res = await fetch('/Admin/SetPinPriority', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(order)
+            });
+            if (!res.ok) { alert('ไม่สามารถบันทึกลำดับ priority ได้'); return; }
+            applyPinPriorityOrder(order);
+        } catch (err) {
+            console.error("SetPinPriority failed", err);
+            alert('ไม่สามารถบันทึกลำดับ priority ได้');
+        }
+    }
+
+    // อัปเดตการ์ด Pin Priority Order และ Display Layer Stack ในหน้าทันที โดยไม่ต้อง reload
+    function applyPinPriorityOrder(order) {
+        LAYER_PIN_PRIORITY = order.slice();
+
+        const list = document.getElementById('priorityList');
+        order.forEach((pin, i) => {
+            const item = list.querySelector(`.priority-item[data-pin="${pin}"]`);
+            item.querySelector('.priority-rank').textContent = '#' + (i + 1);
+            const [upBtn, downBtn] = item.querySelectorAll('.priority-btn');
+            upBtn.disabled = (i === 0);
+            downBtn.disabled = (i === order.length - 1);
+            list.appendChild(item);
+        });
+
+        const stack = document.getElementById('layerStack');
+        const idle  = document.getElementById('layer-stack-idle');
+        order.forEach((pin, i) => {
+            const z    = order.length - i;
+            const item = document.getElementById('layer-stack-pin-' + pin);
+            item.querySelector('.layer-z').textContent = 'z' + z;
+            item.querySelector('.layer-name').textContent = `Layer ${z} · GPIO ${pin}`;
+            stack.insertBefore(item, idle);
+        });
+    }
 
     devConnection.on("SetSimulatorMode", (enabled) => {
         applySimulatorMode(enabled);
