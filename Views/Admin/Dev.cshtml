@@ -110,6 +110,35 @@ body {
 .pk-conn-badge.live { background: var(--green-lt); color: var(--green); border: 1px solid var(--green-bd); }
 .pk-conn-badge.off  { background: var(--red-lt);   color: var(--red);   border: 1px solid var(--red-bd); }
 
+/* ── Mode Toggle (Simulator / Normal) ── */
+.mode-toggle {
+    display: flex; align-items: center; gap: 4px;
+    background: var(--surface-3); border: 1px solid var(--border);
+    border-radius: 100px; padding: 3px;
+}
+.mode-btn {
+    border: none; background: transparent; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    letter-spacing: .3px; border-radius: 100px; padding: 6px 14px;
+    color: var(--ink-4); transition: all .15s; display: flex; align-items: center; gap: 6px;
+}
+.mode-btn .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .4; flex-shrink: 0; }
+.mode-btn:hover { color: var(--ink-2); }
+.mode-btn.active.simulator { background: var(--purple); color: #fff; box-shadow: 0 2px 8px rgba(124,58,237,.3); }
+.mode-btn.active.simulator .dot { opacity: 1; animation: pulse-amber 2s ease-out infinite; }
+.mode-btn.active.normal { background: var(--green); color: #fff; box-shadow: 0 2px 8px rgba(22,163,74,.3); }
+.mode-btn.active.normal .dot { opacity: 1; }
+.sim-banner {
+    display: none; align-items: center; gap: 8px;
+    background: rgba(124,58,237,.08);
+    border: 1px solid rgba(124,58,237,.25); color: var(--purple);
+    border-radius: var(--radius-sm); padding: 8px 14px; margin-bottom: 14px;
+    font-size: 12px; font-weight: 600;
+}
+.sim-banner svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.sim-banner.show { display: flex; }
+.pin-grid.is-locked .dev-btn { opacity: .4; cursor: not-allowed; pointer-events: none; }
+
 /* ── Pin Grid ── */
 .pin-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .pin-card {
@@ -161,8 +190,11 @@ body {
 .btn-low:hover  { background: rgba(220,38,38,.18);  box-shadow: 0 2px 8px rgba(220,38,38,.15); }
 .dev-btn:active { transform: scale(.96); }
 
-/* ── Two-col ── */
-.pk-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+/* ── Two-col equal height ── */
+.pk-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
+.pk-two-col > .pk-card { display: flex; flex-direction: column; }
+.pk-two-col > .pk-card > .pk-card-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.pk-two-col .dev-terminal { flex: 1; min-height: 180px; height: auto; }
 
 /* ── GPIO Live Monitor ── */
 .monitor-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
@@ -201,7 +233,7 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 14px 16px;
-    height: 240px; overflow-y: auto;
+    overflow-y: auto;
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px; line-height: 1.8;
     scrollbar-width: thin; scrollbar-color: var(--border-lt) transparent;
@@ -227,8 +259,9 @@ body {
 .raw-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--ink-2); }
 .raw-table tbody tr:last-child td { border-bottom: none; }
 .raw-table tbody tr:hover td { background: var(--surface-2); }
-.raw-table tbody tr.row-active td { background: #f0fdf4; }
-.raw-table tbody tr.row-active td:first-child { border-left: 2px solid var(--green); }
+.raw-table tbody tr.row-active td { background: #dcfce7 !important; }
+.raw-table tbody tr.row-active:hover td { background: #bbf7d0 !important; }
+.raw-table tbody tr.row-active td:first-child { border-left: 4px solid var(--green); }
 
 .raw-pin-cell { display: flex; flex-direction: column; gap: 2px; }
 .raw-pin-num  { font-size: 13px; font-weight: 700; color: var(--blue); font-family: 'JetBrains Mono', monospace; }
@@ -283,6 +316,9 @@ body {
 /* Tablet portrait */
 @@media (max-width: 900px) {
     .pk-two-col   { grid-template-columns: 1fr; }
+    .pk-two-col > .pk-card { display: block; }
+    .pk-two-col > .pk-card > .pk-card-body { flex: none; display: block; }
+    .pk-two-col .dev-terminal { flex: none; height: 220px; }
     .pin-grid     { grid-template-columns: repeat(3, 1fr); }
     .monitor-grid { grid-template-columns: repeat(5, 1fr); }
 }
@@ -390,10 +426,24 @@ body {
                     <div class="pk-card-title">GPIO Simulation</div>
                 </div>
             </div>
-            <span class="pk-card-meta">@monitorPins.Length pins · send HIGH / LOW signal</span>
+            <div style="display:flex;align-items:center;gap:14px;">
+                <span class="pk-card-meta">@monitorPins.Length pins · send HIGH / LOW signal</span>
+                <div class="mode-toggle">
+                    <button class="mode-btn simulator" id="modeBtnSimulator" onclick="setSimulatorMode(true)">
+                        <span class="dot"></span> Simulator
+                    </button>
+                    <button class="mode-btn normal" id="modeBtnNormal" onclick="setSimulatorMode(false)">
+                        <span class="dot"></span> Normal
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="pk-card-body">
-            <div class="pin-grid">
+            <div class="sim-banner" id="simBanner">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                Simulator Mode เปิดอยู่ — ระบบไม่รับสัญญาณ GPIO จริง กดปุ่ม HIGH/LOW ด้านล่างเพื่อเปลี่ยนภาพหน้าจอ Kiosk ได้ทันที
+            </div>
+            <div class="pin-grid" id="simPinGrid">
                 @foreach (var pin in monitorPins)
                 {
                     var state = Model.FirstOrDefault(s => s.GpioPin == pin);
@@ -561,6 +611,41 @@ body {
 
 <script src="~/js/signalr.min.js"></script>
 <script>
+    // ── Simulator / Normal Mode ──
+    const modeBtnSimulator = document.getElementById('modeBtnSimulator');
+    const modeBtnNormal    = document.getElementById('modeBtnNormal');
+    const simBanner        = document.getElementById('simBanner');
+
+    function applySimulatorMode(enabled) {
+        modeBtnSimulator.classList.toggle('active', enabled);
+        modeBtnNormal.classList.toggle('active', !enabled);
+        simBanner.classList.toggle('show', enabled);
+        document.getElementById('simPinGrid').classList.toggle('is-locked', !enabled);
+    }
+
+    async function setSimulatorMode(enabled) {
+        try {
+            const res = await fetch(`/Admin/SetSimulatorMode?enabled=${enabled}`, { method: 'POST' });
+            if (!res.ok) { alert('Failed to set mode'); return; }
+            const data = await res.json();
+            applySimulatorMode(data.enabled);
+
+            const time = new Date().toLocaleTimeString();
+            const log  = document.createElement('div');
+            log.className = 'log-entry';
+            log.innerHTML = data.enabled
+                ? `<span class="ts">[${time}]</span> เปิด <span style="color:#7c3aed;font-weight:700;">Simulator Mode</span> · สั่งภาพได้ด้วยปุ่ม HIGH/LOW`
+                : `<span class="ts">[${time}]</span> กลับสู่ <span style="color:#16a34a;font-weight:700;">Normal Mode</span> · รอสัญญาณ GPIO จริง`;
+            document.getElementById('terminal').prepend(log);
+        } catch (err) {
+            console.error('Failed to set simulator mode', err);
+        }
+    }
+
+    fetch('/Admin/GetSimulatorMode')
+        .then(r => r.json())
+        .then(d => applySimulatorMode(d.enabled));
+
     // ── GPIO Simulation ──
     async function triggerPin(pin, isActive) {
         const terminal = document.getElementById('terminal');
@@ -568,15 +653,23 @@ body {
         const sigLabel = isActive ? 'HIGH' : 'LOW';
         const sigColor = isActive ? '#16a34a' : '#dc2626';
 
-        // update sim card dot
-        const dot   = document.getElementById('sim-dot-' + pin);
-        const label = document.getElementById('sim-label-' + pin);
-        if (dot)   { dot.className = 'pin-state-dot ' + (isActive ? 'is-high' : 'is-low'); }
-        if (label) { label.textContent = sigLabel; label.style.color = sigColor; }
-
         try {
             const response = await fetch(`/Admin/ManualTrigger?pin=${pin}&isActive=${isActive}`, { method: 'POST' });
             const data = response.ok ? await response.json() : null;
+
+            if (response.ok && data?.ignored) {
+                const log = document.createElement('div');
+                log.className = 'log-entry err';
+                log.innerHTML = `<span class="ts">[${time}]</span> ⚠ GPIO <span style="color:#2563eb;">${pin}</span> → ${sigLabel} ถูกข้าม — ต้องเปิด <span style="color:#7c3aed;font-weight:700;">Simulator Mode</span> ก่อน`;
+                terminal.prepend(log);
+                return;
+            }
+
+            // update sim card dot
+            const dot   = document.getElementById('sim-dot-' + pin);
+            const label = document.getElementById('sim-label-' + pin);
+            if (dot)   { dot.className = 'pin-state-dot ' + (isActive ? 'is-high' : 'is-low'); }
+            if (label) { label.textContent = sigLabel; label.style.color = sigColor; }
 
             const log = document.createElement('div');
             log.className = response.ok ? 'log-entry' : 'log-entry err';
@@ -607,6 +700,10 @@ body {
         if (hasCar && activePin !== -1) {
             document.getElementById('dev-pin-' + activePin)?.classList.add('active');
         }
+    });
+
+    devConnection.on("SetSimulatorMode", (enabled) => {
+        applySimulatorMode(enabled);
     });
 
     // ── Raw GPIO Readings ──

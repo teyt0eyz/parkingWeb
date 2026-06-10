@@ -21,14 +21,24 @@
             width: 100%; height: 100%;
             object-fit: contain; display: block;
             transform: translateZ(0); will-change: transform;
+            z-index: 0;
         }
 
-        #guideImage {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: contain; display: none;
-            transform: translateZ(0); will-change: transform;
+        /* ── State Layers ──
+           เลเยอร์ภาพสถานะ GPIO เรียงซ้อนกันตาม priority (z-index 1-5)
+           วิดีโอ idle อยู่เลเยอร์ล่างสุด (z-index 0) เล่นค้างตลอดเวลา
+           ไม่ต้อง pause/resume จึงตัดปัญหาวิดีโอขึ้นดีเลย์ */
+        .state-layer {
+            position: absolute; inset: 0;
+            background-size: contain; background-position: center; background-repeat: no-repeat;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            pointer-events: none;
         }
+        /* เลเยอร์ที่กำหนดรูปไว้แล้วเท่านั้นที่ทึบดำเป็นพื้นหลังตอน active
+           เลเยอร์ที่ยังไม่ตั้งรูป (data-has-image="false") จะไม่ทับวิดีโอ */
+        .state-layer[data-has-image="true"] { background-color: #000; }
+        .state-layer.is-active { opacity: 1; }
 
         /* ── Buffer overlay ── */
         #bufferOverlay {
@@ -69,38 +79,39 @@
         /* ── Debug panel ── */
         #dbg {
             position: fixed; bottom: 16px; left: 16px;
-            background: rgba(0,0,0,0.88);
-            border: 1px solid #334155;
+            background: rgba(0,0,0,0.94);
+            border: 1px solid #64748b;
             border-radius: 10px;
-            padding: 14px 18px;
+            padding: 16px 20px;
             z-index: 1000;
             font-family: 'Courier New', monospace;
-            font-size: 15px; color: #94a3b8;
-            min-width: 320px; max-width: 460px;
-            line-height: 1.9;
+            font-size: 17px; color: #cbd5e1;
+            min-width: 340px; max-width: 900px;
+            line-height: 2.0;
             pointer-events: none;
             display: none;
             transition: opacity 0.4s ease;
         }
         #dbg .dbg-row { display: flex; justify-content: space-between; gap: 16px; }
-        #dbg .dbg-key { color: #64748b; }
-        #dbg .dbg-val { color: #e2e8f0; font-weight: 600; }
+        #dbg .dbg-key { color: #94a3b8; }
+        #dbg .dbg-val { color: #f1f5f9; font-weight: 700; }
         #dbg .dbg-val.ok   { color: #4ade80; }
-        #dbg .dbg-val.warn { color: #facc15; }
+        #dbg .dbg-val.warn { color: #fde047; }
         #dbg .dbg-val.err  { color: #f87171; }
         #dbg-log {
-            margin-top: 10px; border-top: 1px solid #1e293b;
-            padding-top: 8px; max-height: 120px; overflow: hidden;
+            margin-top: 10px; border-top: 1px solid #334155;
+            padding-top: 8px; max-height: 200px; overflow: hidden;
             display: flex; flex-direction: column-reverse;
         }
-        #dbg-log div { color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #dbg-log div.new { color: #93c5fd; }
+        #dbg-log div { color: #94a3b8; white-space: normal; word-break: break-all; }
+        #dbg-log div.new { color: #60a5fa; }
 
         /* ── No-video message ── */
         #noVideoMsg {
             display: none;
             position: absolute; inset: 0;
             align-items: center; justify-content: center;
+            z-index: 0;
         }
         #noVideoMsg span {
             color: #fff; font-size: 2rem;
@@ -148,23 +159,46 @@
     <div id="dbg-log"></div>
 </div>
 
+@{
+    // priority สูงสุด → ต่ำสุด ต้องตรงกับ GpioService._pins (ลำดับการสแกนหา activePin)
+    var pinPriority   = new[] { 17, 27, 22, 23, 24 };
+    var parkingStates = (ViewBag.ParkingStates as List<ParkingWeb.Models.ParkingState>) ?? new List<ParkingWeb.Models.ParkingState>();
+}
 <div id="display-container">
-    <video id="idleVideo" muted loop playsinline preload="none"></video>
+    <!-- เลเยอร์ 0 (ล่างสุด): วิดีโอ idle เล่นค้างตลอดเวลา -->
+    <video id="idleVideo" muted loop playsinline preload="auto"></video>
     <div id="noVideoMsg"><span>No video uploaded yet</span></div>
-    <img id="guideImage" src="" alt="Car Guide" />
+
+    <!-- เลเยอร์ 1-5: ภาพสถานะ GPIO เรียงตาม priority สูงสุดอยู่บนสุด -->
+    @for (int i = 0; i < pinPriority.Length; i++)
+    {
+        var pin   = pinPriority[i];
+        var state = parkingStates.FirstOrDefault(s => s.GpioPin == pin);
+        var bg    = !string.IsNullOrEmpty(state?.ImagePath) ? $"/uploads/{state!.ImagePath}" : "";
+        var z     = pinPriority.Length - i;
+        <div class="state-layer" id="layer-pin-@pin" data-pin="@pin" data-has-image="@(string.IsNullOrEmpty(bg) ? "false" : "true")"
+             style="z-index:@z;@(string.IsNullOrEmpty(bg) ? "" : $" background-image:url('{bg}');")"></div>
+    }
 </div>
 
 <script src="~/js/signalr.min.js"></script>
 <script>
     const idleVid   = document.getElementById('idleVideo');
-    const carImg    = document.getElementById('guideImage');
     const overlay   = document.getElementById('bufferOverlay');
     const bufFill   = document.getElementById('bufferFill');
     const bufPct    = document.getElementById('bufferPct');
 
-    let videoReady = false;
-    let showingCar = false;
-    let blobUrl    = null;
+    // ── State Layers (เรียงตาม priority สูงสุด → ต่ำสุด, ตรงกับ GpioService._pins) ──
+    const PIN_PRIORITY = [17, 27, 22, 23, 24];
+    const stateLayers  = {};
+    PIN_PRIORITY.forEach(pin => stateLayers[pin] = document.getElementById('layer-pin-' + pin));
+
+    function showStateLayer(activePin) {
+        Object.values(stateLayers).forEach(el => el?.classList.remove('is-active'));
+        const layer = stateLayers[activePin];
+        // ถ้าขานี้ยังไม่ได้ตั้งรูปไว้ ปล่อยให้วิดีโอด้านล่างแสดงต่อแทน
+        if (layer && layer.dataset.hasImage === 'true') layer.classList.add('is-active');
+    }
 
     // ── Debug ──
     const READY_LABELS = ['HAVE_NOTHING','HAVE_METADATA','HAVE_CURRENT_DATA','HAVE_FUTURE_DATA','HAVE_ENOUGH_DATA'];
@@ -242,7 +276,7 @@
     @if (ViewBag.HasVideo == true)
     {
         <text>
-        loadVideo('/videos/idle.mp4');
+        loadVideo('/videos/idle.mp4?v=@ViewBag.VideoVersion');
         </text>
     }
     else
@@ -250,49 +284,33 @@
         <text>
         overlay.style.display = 'none';
         document.getElementById('noVideoMsg').style.display = 'flex';
-        videoReady = true;
         </text>
     }
 
     function loadVideo(url) {
-        dbgLog('XHR start: ' + url);
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', url);
-        xhr.responseType = 'blob';
+        dbgLog('loading: ' + url);
 
-        xhr.onprogress = function (e) {
-            if (!e.lengthComputable) return;
-            const pct = Math.round(e.loaded / e.total * 100);
+        idleVid.addEventListener('progress', () => {
+            if (!idleVid.duration || !idleVid.buffered.length) return;
+            const pct = Math.min(100, Math.round(idleVid.buffered.end(idleVid.buffered.length - 1) / idleVid.duration * 100));
             bufFill.style.width = pct + '%';
             bufPct.textContent  = pct + '%';
-        };
+        });
 
-        xhr.onload = function () {
-            dbgLog('XHR done, size=' + (xhr.response.size / 1024 / 1024).toFixed(1) + 'MB');
-            if (blobUrl) URL.revokeObjectURL(blobUrl);
-            blobUrl = URL.createObjectURL(xhr.response);
-            idleVid.src = blobUrl;
-            videoReady  = true;
-
+        idleVid.addEventListener('canplaythrough', () => {
+            dbgLog('canplaythrough → overlay fade');
             bufFill.style.width = '100%';
             bufPct.textContent  = '100%';
-            dbgLog('blob URL set → overlay fade');
 
             overlay.style.opacity = '0';
             setTimeout(() => {
                 overlay.style.display = 'none';
-                if (!showingCar) {
-                    playWithMuteState();
-                }
+                playWithMuteState();
             }, 500);
-        };
+        }, { once: true });
 
-        xhr.onerror = function () {
-            dbgLog('XHR ERROR', 'err');
-            overlay.style.display = 'none';
-        };
-
-        xhr.send();
+        idleVid.src = url;
+        idleVid.load();
     }
 
     // ── Play helper: fetch mute state ก่อน play() เพื่อไม่ให้ Chromium pause ──
@@ -322,19 +340,11 @@
         .build();
 
     connection.on("ReceiveStatus", (imagePath, hasCar, activePin) => {
-        if (hasCar === true && imagePath && imagePath !== "") {
-            showingCar = true;
-            carImg.src = '/uploads/' + imagePath;
-            carImg.style.display = 'block';
-            idleVid.style.display = 'none';
-            idleVid.pause();
+        // วิดีโอเลเยอร์ล่างสุดเล่นค้างตลอดเวลา แค่สลับเลเยอร์ภาพด้านบนตาม activePin
+        if (hasCar === true && activePin !== -1) {
+            showStateLayer(activePin);
         } else {
-            showingCar = false;
-            carImg.style.display = 'none';
-            idleVid.style.display = 'block';
-            if (videoReady) {
-                playWithMuteState();
-            }
+            showStateLayer(-1);
         }
     });
 

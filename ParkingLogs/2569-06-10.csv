@@ -1,0 +1,158 @@
+﻿2569-06-10,07:11:47,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,07:12:29,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,07:12:37,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,07:27:41,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,07:27:41,SYSTEM,=== Application started ===
+2569-06-10,07:27:59,Slot_22,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,07:28:09,Slot_22,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,07:28:28,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,07:28:29,SYSTEM,Kiosk debug panel set to OFF
+2569-06-10,07:28:30,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,07:28:31,SYSTEM,Kiosk debug panel set to OFF
+2569-06-10,07:37:20,SYSTEM,Idle video updated — size: 21 MB, file: Yosemite in 4K (Sony A6400, Vertical Video, 916) - Byrell (720p).mp4
+2569-06-10,07:37:43,SYSTEM,Kiosk mute set to True
+2569-06-10,07:38:56,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,07:39:11,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,07:43:32,SYSTEM,=== Application stopping ===
+2569-06-10,07:43:32,SYSTEM,GpioService stopped
+2569-06-10,07:43:36,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,07:43:36,SYSTEM,=== Application started ===
+2569-06-10,07:44:16,Slot_22,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,07:44:17,Slot_22,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,07:44:26,SYSTEM,Kiosk debug panel set to OFF
+2569-06-10,07:45:10,SYSTEM,Kiosk mute set to False
+2569-06-10,07:45:37,SYSTEM,Idle video updated — size: 21 MB, file: Yosemite in 4K (Sony A6400, Vertical Video, 916) - Byrell (720p).mp4
+2569-06-10,07:57:39,SYSTEM,Kiosk debug panel set to OFF
+2569-06-10,07:57:47,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,08:04:32,SYSTEM,=== Application stopping ===
+2569-06-10,08:04:32,SYSTEM,GpioService stopped
+2569-06-10,08:04:36,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:04:36,SYSTEM,=== Application started ===
+2569-06-10,08:06:26,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,08:07:26,SYSTEM,=== Application stopping ===
+2569-06-10,08:07:26,SYSTEM,GpioService stopped
+2569-06-10,08:07:29,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:07:29,SYSTEM,=== Application started ===
+2569-06-10,08:07:34,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,08:09:21,SYSTEM,=== Application stopping ===
+2569-06-10,08:09:25,SYSTEM,GpioService stopped
+2569-06-10,08:09:25,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:09:25,SYSTEM,=== Application started ===
+2569-06-10,08:09:29,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,08:10:44,SYSTEM,Kiosk debug panel set to OFF
+2569-06-10,08:11:08,SYSTEM,Screen rotation set to 90°
+2569-06-10,08:11:14,SYSTEM,Kiosk mute set to True
+2569-06-10,08:11:15,SYSTEM,Kiosk mute set to False
+2569-06-10,08:11:19,SYSTEM,Kiosk mute set to True
+2569-06-10,08:11:20,SYSTEM,Kiosk mute set to False
+2569-06-10,08:11:23,SYSTEM,Kiosk mute set to True
+2569-06-10,08:11:30,SYSTEM,Kiosk mute set to False
+2569-06-10,08:11:40,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,08:11:46,SYSTEM,Kiosk debug panel set to OFF
+2569-06-10,08:12:01,SYSTEM,Kiosk mute set to True
+2569-06-10,08:12:59,SYSTEM,State image updated — GPIO Pin 17, file: luffy icon.jpeg (66 KB)
+2569-06-10,08:13:03,SYSTEM,State image updated — GPIO Pin 27, file: 750341987957352440.jpeg (155 KB)
+2569-06-10,08:13:07,SYSTEM,State image updated — GPIO Pin 22, file: 636203884946532043.jpeg (21 KB)
+2569-06-10,08:13:11,SYSTEM,State image updated — GPIO Pin 23, file: 588986457587968940.jpeg (117 KB)
+2569-06-10,08:13:18,SYSTEM,State image updated — GPIO Pin 24, file: 1022106077971473435.jpeg (114 KB)
+2569-06-10,08:13:33,Slot_17,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:13:38,Slot_17,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:13:40,Slot_17,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:13:50,Slot_17,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:14:08,SYSTEM,State image updated — GPIO Pin 17, file: 636203884946532043.jpeg (21 KB)
+2569-06-10,08:14:20,SYSTEM,State image updated — GPIO Pin 22, file: XD.jpeg (57 KB)
+2569-06-10,08:14:34,Slot_22,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:21:03,SYSTEM,=== Application stopping ===
+2569-06-10,08:21:03,SYSTEM,GpioService stopped
+2569-06-10,08:21:07,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:21:07,SYSTEM,=== Application started ===
+2569-06-10,08:21:23,SYSTEM,Simulator mode set to ON
+2569-06-10,08:21:28,Slot_22,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:21:45,Slot_27,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:21:48,Slot_27,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:10,Slot_17,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:12,Slot_17,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:12,Slot_17,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:13,Slot_27,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:14,Slot_27,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:15,Slot_22,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:16,Slot_22,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:17,Slot_24,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:18,Slot_24,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:19,Slot_23,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:20,Slot_23,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:21,SYSTEM,Simulator mode set to OFF
+2569-06-10,08:22:22,Slot_17,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:23,Slot_17,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:24,Slot_17,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:24,Slot_17,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:25,Slot_27,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:26,Slot_27,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:26,Slot_27,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:27,Slot_22,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:28,Slot_22,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:28,Slot_22,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:29,Slot_23,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:30,Slot_23,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:22:31,Slot_24,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:22:32,Slot_24,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:26:07,Slot_27,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:26:08,Slot_27,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:26:08,Slot_27,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:26:09,Slot_22,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:26:10,Slot_22,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:26:10,Slot_22,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:28:00,SYSTEM,=== Application stopping ===
+2569-06-10,08:28:00,SYSTEM,GpioService stopped
+2569-06-10,08:28:04,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:28:04,SYSTEM,=== Application started ===
+2569-06-10,08:28:33,SYSTEM,Simulator mode set to ON
+2569-06-10,08:28:34,Slot_17,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:28:34,Slot_17,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:28:35,Slot_27,รถเข้าจอด (Manual Sim: HIGH)
+2569-06-10,08:28:36,Slot_27,ไม่มีรถ (Manual Sim: LOW)
+2569-06-10,08:30:28,SYSTEM,Simulator mode set to OFF
+2569-06-10,08:30:28,SYSTEM,Simulator mode set to ON
+2569-06-10,08:30:34,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,08:30:35,SYSTEM,Kiosk debug panel set to OFF
+2569-06-10,08:30:35,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,08:30:36,SYSTEM,Kiosk debug panel set to OFF
+2569-06-10,08:37:51,SYSTEM,=== Application stopping ===
+2569-06-10,08:37:55,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:37:55,SYSTEM,=== Application started ===
+2569-06-10,08:38:07,SYSTEM,GpioService stopped
+2569-06-10,08:41:08,SYSTEM,Kiosk debug panel set to ON
+2569-06-10,08:41:08,SYSTEM,Kiosk mute set to True
+2569-06-10,08:41:08,SYSTEM,Simulator mode set to ON
+2569-06-10,08:41:47,SYSTEM,Kiosk debug panel set to OFF
+2569-06-10,08:41:47,SYSTEM,Kiosk mute set to False
+2569-06-10,08:41:47,SYSTEM,Simulator mode set to OFF
+2569-06-10,08:43:20,SYSTEM,Kiosk mute set to True
+2569-06-10,08:46:52,SYSTEM,=== Application stopping ===
+2569-06-10,08:46:52,SYSTEM,GpioService stopped
+2569-06-10,08:46:56,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:46:56,SYSTEM,=== Application started ===
+2569-06-10,08:47:27,SYSTEM,Bulk state image upload — 2 image(s) updated
+2569-06-10,08:51:39,SYSTEM,=== Application stopping ===
+2569-06-10,08:51:39,SYSTEM,GpioService stopped
+2569-06-10,08:51:42,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:51:42,SYSTEM,=== Application started ===
+2569-06-10,08:54:04,SYSTEM,Bulk state image removal — 3 image(s) removed
+2569-06-10,08:57:05,SYSTEM,=== Application stopping ===
+2569-06-10,08:57:05,SYSTEM,GpioService stopped
+2569-06-10,08:57:09,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:57:09,SYSTEM,=== Application started ===
+2569-06-10,08:58:41,SYSTEM,=== Application stopping ===
+2569-06-10,08:58:41,SYSTEM,GpioService stopped
+2569-06-10,08:58:44,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,08:58:44,SYSTEM,=== Application started ===
+2569-06-10,09:00:38,SYSTEM,=== Application stopping ===
+2569-06-10,09:00:42,SYSTEM,GpioService started (non-Linux — GPIO skipped)
+2569-06-10,09:00:42,SYSTEM,=== Application started ===
+2569-06-10,09:00:48,SYSTEM,GpioService stopped
+2569-06-10,09:01:19,SYSTEM,Idle video removed
+2569-06-10,09:01:33,SYSTEM,Idle video updated — size: 21 MB, file: Yosemite in 4K (Sony A6400, Vertical Video, 916) - Byrell (720p).mp4
+2569-06-10,09:01:35,SYSTEM,Kiosk mute set to True
+2569-06-10,09:01:37,SYSTEM,Kiosk mute set to False
+2569-06-10,09:01:37,SYSTEM,Kiosk mute set to True
+2569-06-10,09:01:39,SYSTEM,Idle video removed

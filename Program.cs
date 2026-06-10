@@ -26,6 +26,7 @@ builder.WebHost.ConfigureKestrel(k =>
 builder.Services.AddHostedService<GpioService>();
 builder.Services.AddSingleton<ParkingWeb.Services.LogService>();
 builder.Services.AddSingleton<ParkingWeb.Services.GpioBaselineService>();
+builder.Services.AddSingleton<ParkingWeb.Services.SimulatorModeService>();
 
 var app = builder.Build();
 

@@ -120,6 +120,22 @@
     .pk-chip-unit  { font-size: 10px; color: var(--ink-4); font-weight: 400; }
     .pk-warn-badge { display: inline-flex; align-items: center; gap: 4px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 600; }
 
+    /* ── System Status Zone ── */
+    .pk-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+    .pk-status-item { display: flex; align-items: center; gap: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; transition: all .2s; }
+    .pk-status-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--white); border: 1px solid var(--border); }
+    .pk-status-icon svg { width: 17px; height: 17px; stroke: var(--ink-3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .pk-status-text { flex: 1; min-width: 0; }
+    .pk-status-label { font-size: 10px; color: var(--ink-4); text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+    .pk-status-value { font-size: 14px; font-weight: 700; color: var(--ink); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+    .pk-status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-4); flex-shrink: 0; position: relative; }
+    .pk-status-dot.on { background: var(--green-dot); }
+    .pk-status-dot.on::after { content:''; position:absolute; inset:-3px; border-radius:50%; background:rgba(22,163,74,.3); animation: pk-pulse 2s ease-out infinite; }
+    .pk-status-dot.warn { background: #f59e0b; }
+    .pk-status-dot.warn::after { content:''; position:absolute; inset:-3px; border-radius:50%; background:rgba(245,158,11,.3); animation: pk-pulse 2s ease-out infinite; }
+    .pk-status-dot.purple { background: #7c3aed; }
+    .pk-status-dot.purple::after { content:''; position:absolute; inset:-3px; border-radius:50%; background:rgba(124,58,237,.3); animation: pk-pulse 2s ease-out infinite; }
+
     /* ── Two-col ── */
     .pk-two-col {
         display: grid;
@@ -213,6 +229,13 @@
     .pk-file-btn { font-size: 12px; color: var(--ink-2); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 12px; cursor: pointer; white-space: nowrap; display: block; transition: all .15s; font-family: inherit; font-weight: 500; }
     .pk-file-btn:hover { background: var(--border-lt); }
     .pk-file-wrap input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+    /* ── GPIO Bulk Actions ── */
+    .pk-gpio-bulk-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 16px 20px; border-top: 1px solid var(--border-lt); margin-top: 4px; }
+    .btn-pk-danger { display: inline-flex; align-items: center; gap: 6px; }
+    .btn-pk-danger svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .btn-pk-danger-solid { background: var(--red); color: #fff; border-color: var(--red); }
+    .btn-pk-danger-solid:hover { background: #DC2626; border-color: #DC2626; }
 
     /* ── Kiosk Rotation ── */
     .pk-kiosk-layout {
@@ -428,6 +451,77 @@
         </div>
     </div>
 
+    <!-- System Status Zone -->
+    <div class="pk-card">
+        <div class="pk-card-head">
+            <div class="pk-card-head-left">
+                <div class="pk-card-accent green"></div>
+                <span class="pk-card-title">System Status</span>
+            </div>
+            <span class="pk-card-meta">Live</span>
+        </div>
+        <div class="pk-card-body">
+            <div class="pk-status-grid">
+
+                <div class="pk-status-item">
+                    <div class="pk-status-icon">
+                        <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                    </div>
+                    <div class="pk-status-text">
+                        <div class="pk-status-label">Kiosk Sound</div>
+                        <div class="pk-status-value" id="statusSoundVal">—</div>
+                    </div>
+                    <div class="pk-status-dot" id="statusSoundDot"></div>
+                </div>
+
+                <div class="pk-status-item">
+                    <div class="pk-status-icon">
+                        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    </div>
+                    <div class="pk-status-text">
+                        <div class="pk-status-label">Debug Panel</div>
+                        <div class="pk-status-value" id="statusDebugVal">—</div>
+                    </div>
+                    <div class="pk-status-dot" id="statusDebugDot"></div>
+                </div>
+
+                <div class="pk-status-item">
+                    <div class="pk-status-icon">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                    </div>
+                    <div class="pk-status-text">
+                        <div class="pk-status-label">Operation Mode</div>
+                        <div class="pk-status-value" id="statusModeVal">—</div>
+                    </div>
+                    <div class="pk-status-dot" id="statusModeDot"></div>
+                </div>
+
+                <div class="pk-status-item">
+                    <div class="pk-status-icon">
+                        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                    </div>
+                    <div class="pk-status-text">
+                        <div class="pk-status-label">Screen Rotation</div>
+                        <div class="pk-status-value" id="statusRotVal">@ViewBag.ScreenRotation°</div>
+                    </div>
+                    <div class="pk-status-dot on"></div>
+                </div>
+
+                <div class="pk-status-item">
+                    <div class="pk-status-icon">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                    </div>
+                    <div class="pk-status-text">
+                        <div class="pk-status-label">Configured Slots</div>
+                        <div class="pk-status-value">@Model.Count() state(s)</div>
+                    </div>
+                    <div class="pk-status-dot on"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <div class="pk-two-col">
 
         <!-- Card 01: Idle Video -->
@@ -487,6 +581,13 @@
                                 <path d="M15.54 8.46a5 5 0 010 7.07"/>
                             </svg>
                             <span class="mute-label" id="muteLabelText">Sound On</span>
+                        </button>
+                        <button type="button" class="btn-pk-primary btn-pk-danger-solid" id="removeVideoBtn" onclick="removeIdleVideo()">
+                            <svg viewBox="0 0 24 24">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                            Remove Video
                         </button>
                     </div>
                 </form>
@@ -604,6 +705,7 @@
                             <div class="pk-file-wrap">
                                 <span class="pk-file-btn" id="label-@item.Id">Choose image</span>
                                 <input type="file" name="imageFile" accept="image/*" required
+                                       id="bulk-file-@item.Id" data-id="@item.Id"
                                        onchange="document.getElementById('label-@item.Id').textContent = this.files[0]?.name ?? 'Choose image'" />
                             </div>
                             <button type="submit" class="btn-pk-primary btn-pk-sm">Upload</button>
@@ -616,6 +718,23 @@
                     </form>
                 </div>
             }
+        </div>
+        <div class="pk-gpio-bulk-actions">
+            <button type="button" class="btn-pk-primary btn-pk-sm" id="uploadAllBtn" onclick="uploadAllStateImages()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Upload All
+            </button>
+            <button type="button" class="btn-pk-danger btn-pk-danger-solid" id="removeAllBtn" onclick="removeAllStateImages()">
+                <svg viewBox="0 0 24 24">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+                Remove All
+            </button>
         </div>
     </div>
 
@@ -630,7 +749,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <button type="button" id="debugToggleBtn" onclick="toggleKioskDebug()"
-                style="font-size:12px;font-weight:600;font-family:inherit;border-radius:var(--radius-sm);padding:10px 16px;border:1.5px solid var(--border);background:var(--white);color:var(--ink-3);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .2s;">
+                style="font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;border-radius:var(--radius-sm);padding:10px 18px;border:1.5px solid #d97706;background:#fef3c7;color:#b45309;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .2s;letter-spacing:.3px;">
             <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
             </svg>
@@ -652,17 +771,63 @@
     
 </div><!-- /pk-content -->
 
+<script src="~/js/signalr.min.js"></script>
 <script>
+    // ── System Status Zone ──
+    function updateStatusSound(muted) {
+        const val = document.getElementById('statusSoundVal');
+        const dot = document.getElementById('statusSoundDot');
+        val.textContent = muted ? 'Muted' : 'On';
+        dot.className = 'pk-status-dot' + (muted ? ' warn' : ' on');
+    }
+
+    function updateStatusDebug(enabled) {
+        const val = document.getElementById('statusDebugVal');
+        const dot = document.getElementById('statusDebugDot');
+        val.textContent = enabled ? 'ON' : 'OFF';
+        dot.className = 'pk-status-dot' + (enabled ? ' warn' : '');
+    }
+
+    function updateStatusMode(simEnabled) {
+        const val = document.getElementById('statusModeVal');
+        const dot = document.getElementById('statusModeDot');
+        val.textContent = simEnabled ? 'Simulator' : 'Normal';
+        dot.className = 'pk-status-dot' + (simEnabled ? ' purple' : ' on');
+    }
+
+    function updateStatusRotation(degree) {
+        const val = document.getElementById('statusRotVal');
+        if (val) val.textContent = degree + '°';
+    }
+
+    fetch('/Admin/GetSimulatorMode')
+        .then(r => r.json())
+        .then(d => updateStatusMode(d.enabled));
+
+    // ── รับอัปเดตสถานะแบบ Real-time จากหน้าอื่น (เช่น Dev Console) ──
+    const statusConnection = new signalR.HubConnectionBuilder()
+        .withUrl('/parkingHub')
+        .withAutomaticReconnect()
+        .build();
+
+    statusConnection.on("SetMute", (muted) => { kioskMuted = muted; updateMuteBtn(muted); updateStatusSound(muted); });
+    statusConnection.on("SetDebugMode", (enabled) => { kioskDebug = enabled; updateDebugBtn(enabled); updateStatusDebug(enabled); });
+    statusConnection.on("SetSimulatorMode", (enabled) => updateStatusMode(enabled));
+    statusConnection.on("RotateScreen", (degree) => updateStatusRotation(degree));
+
+    statusConnection.start().catch(err => console.error('SignalR connection failed:', err));
+
     // ── Debug Toggle ──
     let kioskDebug = false;
 
     fetch('/Admin/GetDebugMode')
         .then(r => r.json())
-        .then(d => { kioskDebug = d.enabled; updateDebugBtn(d.enabled); });
+        .then(d => { kioskDebug = d.enabled; updateDebugBtn(d.enabled); updateStatusDebug(d.enabled); });
 
     function toggleKioskDebug() {
         kioskDebug = !kioskDebug;
         updateDebugBtn(kioskDebug);
+        updateStatusDebug(kioskDebug);
         fetch(`/Admin/SetDebugMode?enabled=${kioskDebug}`, { method: 'POST' });
     }
 
@@ -670,9 +835,9 @@
         const btn   = document.getElementById('debugToggleBtn');
         const label = document.getElementById('debugBtnLabel');
         label.textContent = enabled ? 'Debug: ON' : 'Debug: OFF';
-        btn.style.background    = enabled ? '#0f172a' : 'var(--white)';
-        btn.style.color         = enabled ? '#4ade80' : 'var(--ink-3)';
-        btn.style.borderColor   = enabled ? '#166534' : 'var(--border)';
+        btn.style.background    = enabled ? '#0f172a' : '#fef3c7';
+        btn.style.color         = enabled ? '#4ade80' : '#b45309';
+        btn.style.borderColor   = enabled ? '#166534' : '#d97706';
     }
 
     // ── Mute Toggle ──
@@ -680,11 +845,12 @@
 
     fetch('/Admin/GetMuteState')
         .then(r => r.json())
-        .then(data => { kioskMuted = data.muted; updateMuteBtn(data.muted); });
+        .then(data => { kioskMuted = data.muted; updateMuteBtn(data.muted); updateStatusSound(data.muted); });
 
     function toggleKioskMute() {
         kioskMuted = !kioskMuted;
         updateMuteBtn(kioskMuted);
+        updateStatusSound(kioskMuted);
         fetch(`/Admin/SetMute?muted=${kioskMuted}`, { method: 'POST' });
     }
 
@@ -741,9 +907,7 @@
         return true;
     }
 
-    function validateImageUpload(form) {
-        const input = form.querySelector('input[type="file"]');
-        const file  = input?.files[0];
+    function validateImageFile(file) {
         if (!file) return true;
         const mb = file.size / 1024 / 1024;
         if (!file.type.startsWith('image/')) {
@@ -755,6 +919,103 @@
             return false;
         }
         return true;
+    }
+
+    function validateImageUpload(form) {
+        const input = form.querySelector('input[type="file"]');
+        return validateImageFile(input?.files[0]);
+    }
+
+    // ── Upload All GPIO State Images (bulk) ──
+    async function uploadAllStateImages() {
+        document.getElementById('upload-error-banner')?.remove();
+
+        const fileInputs = document.querySelectorAll('.pk-gpio-row input[type="file"][data-id]');
+        const formData   = new FormData();
+        let count = 0;
+
+        for (const input of fileInputs) {
+            const file = input.files[0];
+            if (!file) continue;
+            if (!validateImageFile(file)) return;
+            formData.append(`imageFile_${input.dataset.id}`, file);
+            count++;
+        }
+
+        if (count === 0) {
+            showUploadError('กรุณาเลือกรูปภาพอย่างน้อย 1 ช่องก่อนกด Upload All');
+            return;
+        }
+
+        const btn      = document.getElementById('uploadAllBtn');
+        const origHtml = btn.innerHTML;
+        btn.disabled   = true;
+        btn.textContent = `Uploading ${count} image(s)…`;
+
+        try {
+            const res = await fetch('/Admin/UpdateAllStateImages', { method: 'POST', body: formData });
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+                showUploadError('Bulk upload failed (HTTP ' + res.status + ')');
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            showUploadError('เกิดข้อผิดพลาดในการอัปโหลด ลองอีกครั้ง');
+        }
+    }
+
+    // ── Remove Idle Video ──
+    async function removeIdleVideo() {
+        if (!confirm('ลบวิดีโอ Idle ปัจจุบันใช่ไหม? หน้าจอ Kiosk จะไม่มีวิดีโอพื้นหลังจนกว่าจะอัปโหลดใหม่')) return;
+
+        const btn      = document.getElementById('removeVideoBtn');
+        const origHtml = btn.innerHTML;
+        btn.disabled    = true;
+        btn.textContent = 'Removing…';
+
+        try {
+            const res = await fetch('/Admin/RemoveIdleVideo', { method: 'POST' });
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+                showUploadError('Remove video failed (HTTP ' + res.status + ')');
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            showUploadError('เกิดข้อผิดพลาดในการลบวิดีโอ ลองอีกครั้ง');
+        }
+    }
+
+    // ── Remove All GPIO State Images (bulk) ──
+    async function removeAllStateImages() {
+        if (!confirm('ลบรูปภาพทุกช่องสถานะทั้งหมดใช่ไหม? ดำเนินการนี้ไม่สามารถย้อนกลับได้')) return;
+
+        const btn      = document.getElementById('removeAllBtn');
+        const origHtml = btn.innerHTML;
+        btn.disabled    = true;
+        btn.textContent = 'Removing…';
+
+        try {
+            const res = await fetch('/Admin/DeleteAllStateImages', { method: 'POST' });
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+                showUploadError('Remove all failed (HTTP ' + res.status + ')');
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            showUploadError('เกิดข้อผิดพลาดในการลบ ลองอีกครั้ง');
+        }
     }
 
     // ── XHR Video Upload with progress ──

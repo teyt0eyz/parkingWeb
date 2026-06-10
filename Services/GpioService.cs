@@ -14,16 +14,18 @@ public class GpioService : IHostedService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly LogService _logService;
     private readonly GpioBaselineService _baseline;
+    private readonly SimulatorModeService _simulator;
 
     private readonly int[] _pins = { 17, 27, 22, 23, 24 };
     private int _activePin = -1;
 
-    public GpioService(IHubContext<ParkingHub> hub, IServiceScopeFactory scopeFactory, LogService logService, GpioBaselineService baseline)
+    public GpioService(IHubContext<ParkingHub> hub, IServiceScopeFactory scopeFactory, LogService logService, GpioBaselineService baseline, SimulatorModeService simulator)
     {
         _hub = hub;
         _scopeFactory = scopeFactory;
         _logService = logService;
         _baseline = baseline;
+        _simulator = simulator;
 
         _hasGpio = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
         _gpio = _hasGpio ? new GpioController() : null;
@@ -95,33 +97,40 @@ public class GpioService : IHostedService
                 rawBroadcastCounter = 0;
             }
 
-            int triggeredPin = -1;
-            foreach (var pin in _pins)
-            {
-                if (IsPinActive(pin)) { triggeredPin = pin; break; }
-            }
+            // กลับมาโหมด Normal → บังคับ sync สถานะจากขา GPIO จริงในรอบนี้ทันที
+            if (_simulator.ConsumeResyncRequest())
+                _activePin = int.MinValue;
 
-            if (triggeredPin != -1 && _activePin != triggeredPin)
+            if (!_simulator.Enabled)
             {
-                string imagePath = "";
-                using (var scope = _scopeFactory.CreateScope())
+                int triggeredPin = -1;
+                foreach (var pin in _pins)
                 {
-                    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    var state = db.ParkingStates.FirstOrDefault(s => s.GpioPin == triggeredPin);
-                    if (state != null)
-                    {
-                        imagePath = state.ImagePath;
-                        _logService.SaveLog(triggeredPin, $"DETECTED: Car parked at Pin {triggeredPin} (State: {state.StateName})");
-                    }
+                    if (IsPinActive(pin)) { triggeredPin = pin; break; }
                 }
-                await _hub.Clients.All.SendAsync("ReceiveStatus", imagePath, true, triggeredPin);
-                _activePin = triggeredPin;
-            }
-            else if (triggeredPin == -1 && _activePin != -1)
-            {
-                _logService.SaveLog(_activePin, $"CLEARED: Car departed from Pin {_activePin}. System returned to Idle Video.");
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "", false, -1);
-                _activePin = -1;
+
+                if (triggeredPin != -1 && _activePin != triggeredPin)
+                {
+                    string imagePath = "";
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                        var state = db.ParkingStates.FirstOrDefault(s => s.GpioPin == triggeredPin);
+                        if (state != null)
+                        {
+                            imagePath = state.ImagePath;
+                            _logService.SaveLog(triggeredPin, $"DETECTED: Car parked at Pin {triggeredPin} (State: {state.StateName})");
+                        }
+                    }
+                    await _hub.Clients.All.SendAsync("ReceiveStatus", imagePath, true, triggeredPin);
+                    _activePin = triggeredPin;
+                }
+                else if (triggeredPin == -1 && _activePin != -1)
+                {
+                    _logService.SaveLog(_activePin, $"CLEARED: Car departed from Pin {_activePin}. System returned to Idle Video.");
+                    await _hub.Clients.All.SendAsync("ReceiveStatus", "", false, -1);
+                    _activePin = -1;
+                }
             }
 
             await Task.Delay(150);

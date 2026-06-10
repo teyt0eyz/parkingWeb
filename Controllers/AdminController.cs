@@ -15,18 +15,20 @@ public class AdminController : Controller
     private readonly LogService _logger;
     private readonly IHubContext<ParkingHub> _hubContext;
     private readonly GpioBaselineService _baselineSvc;
+    private readonly SimulatorModeService _simulatorSvc;
 
     // เก็บ mute state ไว้บน server ให้ทุกหน้าดึงได้
     private static bool _kioskMuted = false;
     private static bool _debugMode  = false;
 
-    public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger, IHubContext<ParkingHub> hubContext, GpioBaselineService baselineSvc)
+    public AdminController(ApplicationDbContext db, IWebHostEnvironment env, LogService logger, IHubContext<ParkingHub> hubContext, GpioBaselineService baselineSvc, SimulatorModeService simulatorSvc)
     {
         _db = db;
         _env = env;
         _logger = logger;
         _hubContext = hubContext;
         _baselineSvc = baselineSvc;
+        _simulatorSvc = simulatorSvc;
     }
 
     // 1. หน้าหลัก Admin + ระบบคำนวณพื้นที่ Disk (SD Card)
@@ -146,6 +148,20 @@ public class AdminController : Controller
         return RedirectToAction("Index");
     }
 
+    // 2b. ลบวิดีโอ Idle ปัจจุบัน
+    [HttpPost]
+    public async Task<IActionResult> RemoveIdleVideo()
+    {
+        string path = Path.Combine(_env.WebRootPath, "videos", "idle.mp4");
+        if (System.IO.File.Exists(path))
+        {
+            System.IO.File.Delete(path);
+            _logger.SaveSystemLog("Idle video removed");
+            await _hubContext.Clients.All.SendAsync("ReloadPage");
+        }
+        return RedirectToAction("Index");
+    }
+
     // 3. อัปเดตรูปภาพสถานะช่องจอด
     [HttpPost]
     public async Task<IActionResult> UpdateStateImage(int id, IFormFile imageFile)
@@ -195,6 +211,61 @@ public class AdminController : Controller
         return RedirectToAction("Index");
     }
 
+    // 3a. อัปโหลดรูปภาพสถานะหลายช่องพร้อมกัน (Bulk upload) — แต่ละไฟล์ส่งมาเป็น "imageFile_{id}"
+    [HttpPost]
+    public async Task<IActionResult> UpdateAllStateImages()
+    {
+        const long MaxImageBytes = 10L * 1024 * 1024; // 10 MB
+        var allowedImageTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp" };
+
+        string uploadDir = Path.Combine(_env.WebRootPath, "uploads");
+        if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+        int updated = 0;
+        var errors = new List<string>();
+
+        foreach (var file in Request.Form.Files)
+        {
+            if (file.Length == 0 || !file.Name.StartsWith("imageFile_")) continue;
+            if (!int.TryParse(file.Name.Substring("imageFile_".Length), out int id)) continue;
+
+            var state = _db.ParkingStates.Find(id);
+            if (state == null) continue;
+
+            if (file.Length > MaxImageBytes)
+            {
+                errors.Add($"GPIO {state.GpioPin}: ไฟล์ใหญ่เกิน 10 MB ({file.Length / 1024 / 1024} MB)");
+                continue;
+            }
+            if (!allowedImageTypes.Contains(file.ContentType.ToLower()))
+            {
+                errors.Add($"GPIO {state.GpioPin}: รองรับเฉพาะไฟล์รูปภาพ (JPEG, PNG, GIF, WEBP, BMP)");
+                continue;
+            }
+
+            if (!string.IsNullOrEmpty(state.ImagePath))
+            {
+                string oldPath = Path.Combine(uploadDir, state.ImagePath);
+                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+            }
+
+            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            using (var stream = new FileStream(Path.Combine(uploadDir, fileName), FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            state.ImagePath = fileName;
+            updated++;
+        }
+
+        if (updated > 0) _db.SaveChanges();
+        if (errors.Count > 0) TempData["UploadError"] = string.Join(" | ", errors);
+
+        _logger.SaveSystemLog($"Bulk state image upload — {updated} image(s) updated" + (errors.Count > 0 ? $", {errors.Count} skipped" : ""));
+        return RedirectToAction("Index");
+    }
+
     // 3b. ตั้งค่า idle baseline ของ pin แบบ manual (override auto-detect) + บันทึกลง DB
     [HttpPost]
     public IActionResult SetBaseline(int pin, bool idleIsHigh)
@@ -239,9 +310,26 @@ public class AdminController : Controller
             string path = Path.Combine(_env.WebRootPath, "uploads", state.ImagePath);
             if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
 
-            state.ImagePath = ""; 
+            state.ImagePath = "";
             _db.SaveChanges();
         }
+        return RedirectToAction("Index");
+    }
+
+    // 4b. ลบรูปภาพสถานะทุกช่องพร้อมกัน (Bulk remove)
+    [HttpPost]
+    public IActionResult DeleteAllStateImages()
+    {
+        var states = _db.ParkingStates.Where(s => s.ImagePath != null && s.ImagePath != "").ToList();
+        foreach (var state in states)
+        {
+            string path = Path.Combine(_env.WebRootPath, "uploads", state.ImagePath);
+            if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+            state.ImagePath = "";
+        }
+
+        if (states.Count > 0) _db.SaveChanges();
+        _logger.SaveSystemLog($"Bulk state image removal — {states.Count} image(s) removed");
         return RedirectToAction("Index");
     }
     // เพิ่มฟังก์ชันสำหรับบันทึกค่าการหมุน (ถ้าต้องการเก็บลง DB)
@@ -297,7 +385,24 @@ public class AdminController : Controller
     {
         return Ok(new { enabled = _debugMode });
     }
-    
+
+    // ระบบสลับโหมด Simulator (สั่งภาพเอง) / Normal (รอสัญญาณ GPIO จริง)
+    [HttpPost]
+    public async Task<IActionResult> SetSimulatorMode(bool enabled)
+    {
+        _simulatorSvc.SetEnabled(enabled);
+        _logger.SaveSystemLog($"Simulator mode set to {(enabled ? "ON" : "OFF")}");
+        await _hubContext.Clients.All.SendAsync("SetSimulatorMode", enabled);
+        return Ok(new { enabled });
+    }
+
+    [HttpGet]
+    public IActionResult GetSimulatorMode()
+    {
+        return Ok(new { enabled = _simulatorSvc.Enabled });
+    }
+
+
     // 5. ระบบดูรายการ Log ย้อนหลัง (เก็บส่วนคำนวณพื้นที่ไว้ครบถ้วน)
     public IActionResult ViewLogs()
     {
@@ -387,6 +492,10 @@ public class AdminController : Controller
     {
         try
         {
+            // โหมด Normal → ไม่ให้ปุ่มจำลองสั่งเปลี่ยนภาพ ปล่อยให้รอสัญญาณ GPIO จริงเท่านั้น
+            if (!_simulatorSvc.Enabled)
+                return Ok(new { success = true, ignored = true, pin, isActive });
+
             // isActive = ค่า signal ที่จำลอง (true=HIGH, false=LOW)
             // hasCar = signal ต่างจาก idle baseline → triggered
             bool isHigh  = isActive;
@@ -411,7 +520,7 @@ public class AdminController : Controller
             // 🚀 ส่ง SignalR บังคับหน้า Kiosk ให้เปลี่ยนภาพทันที
             await _hubContext.Clients.All.SendAsync("ReceiveStatus", imagePath, hasCar, pin);
 
-            return Ok(new { success = true, pin, isHigh, idleHigh, hasCar });
+            return Ok(new { success = true, ignored = false, pin, isHigh, idleHigh, hasCar });
         }
         catch (Exception ex)
         {
